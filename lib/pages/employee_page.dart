@@ -12,13 +12,8 @@ class _workerMenuState extends State<workerMenu> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-          gradient: LinearGradient(
-              colors: [
-                Color(0xff000428),
-                Color(0xff004e92)
-              ]
-          )
-      ),
+          gradient:
+              LinearGradient(colors: [Color(0xff000428), Color(0xff004e92)])),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Column(
@@ -29,10 +24,10 @@ class _workerMenuState extends State<workerMenu> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                    onPressed: (){
-                      Navigator.pushNamed(context, '/scan');
-                    },
-                    child: Text("Scan QR code"),
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/scan');
+                  },
+                  child: Text("Scan QR code"),
                 ),
               ],
             ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class employeeDelete extends StatefulWidget {
   employeeDelete({super.key});
@@ -11,14 +10,14 @@ class employeeDelete extends StatefulWidget {
 class _employeeDeleteState extends State<employeeDelete> {
   var roll;
 
-  final GlobalKey<FormState> _formKey=GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         gradient:
-        LinearGradient(colors: [Color(0xff000428), Color(0xff004e92)]),
+            LinearGradient(colors: [Color(0xff000428), Color(0xff004e92)]),
       ),
       child: Scaffold(
           backgroundColor: Colors.transparent,
@@ -27,12 +26,16 @@ class _employeeDeleteState extends State<employeeDelete> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Spacer(flex: 2,),
+                Spacer(
+                  flex: 2,
+                ),
                 Text(
                   "Delete employee account",
                   style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
-                Spacer(flex: 1,),
+                Spacer(
+                  flex: 1,
+                ),
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Container(
@@ -58,9 +61,9 @@ class _employeeDeleteState extends State<employeeDelete> {
                                 }
                                 return null;
                               },
-                              onChanged: (value){
+                              onChanged: (value) {
                                 setState(() {
-                                  roll=value;
+                                  roll = value;
                                 });
                               },
                             ),
@@ -70,17 +73,19 @@ class _employeeDeleteState extends State<employeeDelete> {
                     ),
                   ),
                 ),
-                Spacer(flex: 2,),
+                Spacer(
+                  flex: 2,
+                ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 60),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 60),
                   child: ElevatedButton(
                       onPressed: () {
-                        if(_formKey.currentState!.validate()){
+                        if (_formKey.currentState!.validate()) {
                           print("$roll");
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('employee deleted !'))
-                          );
+                              SnackBar(content: Text('employee deleted !')));
                         }
                       },
                       child: Row(
@@ -91,10 +96,11 @@ class _employeeDeleteState extends State<employeeDelete> {
                           Spacer(),
                           Icon(Icons.arrow_forward)
                         ],
-                      )
-                  ),
+                      )),
                 ),
-                Spacer(flex: 2,),
+                Spacer(
+                  flex: 2,
+                ),
               ],
             ),
           )),

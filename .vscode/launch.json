@@ -5,18 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "token_system_-dbms_adder",
+            "name": "token_system",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "token_system_-dbms_adder (profile mode)",
+            "name": "token_system (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "token_system_-dbms_adder (release mode)",
+            "name": "token_system (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

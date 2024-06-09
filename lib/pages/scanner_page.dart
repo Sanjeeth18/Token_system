@@ -29,18 +29,23 @@ class _scannerPageState extends State<scannerPage> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-          gradient: LinearGradient(
-              colors: [Color(0xff000428),Color(0xff004e92)]
-          )
-      ),
+          gradient:
+              LinearGradient(colors: [Color(0xff000428), Color(0xff004e92)])),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           leading: IconButton(
-              onPressed: (){Navigator.pop(context);},
-              icon: Icon(Icons.arrow_back,color: Colors.white,)
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+              )),
+          title: Text(
+            'Scan QR',
+            style: TextStyle(color: Colors.white),
           ),
-          title: Text('Scan QR',style: TextStyle(color: Colors.white),),
           backgroundColor: Colors.transparent,
         ),
         body: Column(
@@ -51,7 +56,6 @@ class _scannerPageState extends State<scannerPage> {
                   key: qrKey,
                   onQRViewCreated: onQRViewCamera,
                 )),
-
           ],
         ),
       ),

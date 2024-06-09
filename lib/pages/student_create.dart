@@ -9,9 +9,10 @@ class studentCreate extends StatefulWidget {
 }
 
 class _studentCreateState extends State<studentCreate> {
-  var roll,name,dob="enter dob",date,doj='enter doj',password;
-  int inserted=1;
-  var options=['Select the course',
+  var roll, name, dob = "enter dob", date, doj = 'enter doj', password;
+  int inserted = 1;
+  var options = [
+    'Select the course',
     'Automobile Engineering',
     'Biomedical Engineering',
     'Civil Engineering',
@@ -42,30 +43,33 @@ class _studentCreateState extends State<studentCreate> {
     'Msc Data Science',
     'Msc Theoretical Computer Science',
     'Msc Applied Mathematics',
-    'MBA'];
-  var course='Select the course';
-  int error_course=0;
-  final GlobalKey<FormState> _formKey=GlobalKey<FormState>();
+    'MBA'
+  ];
+  var course = 'Select the course';
+  int error_course = 0;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         gradient:
-        LinearGradient(colors: [Color(0xff000428), Color(0xff004e92)]),
+            LinearGradient(colors: [Color(0xff000428), Color(0xff004e92)]),
       ),
       child: Scaffold(
           backgroundColor: Colors.transparent,
           body: ListView(
             children: [
-              SizedBox(height: 30,),
+              SizedBox(
+                height: 30,
+              ),
               Center(
                 child: Text(
                   "Create Student account",
                   style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
               ),
-              SizedBox(height:30),
+              SizedBox(height: 30),
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Container(
@@ -78,51 +82,55 @@ class _studentCreateState extends State<studentCreate> {
                     key: _formKey,
                     child: ListView(
                       children: [
-                        Spacer(flex: 1,),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 30),
-                          child: TextFormField(
-                              decoration: InputDecoration(
-                                  hintText: 'Enter roll number',
-                                  hintStyle: TextStyle(color: Colors.black)),
-                              validator: (String? value) {
-                                if (value == null || value.isEmpty || value.length!=6) {
-                                  return 'Enter this field';
-                                }
-                                return null;
-                              },
-                              onChanged: (value){
-                                setState(() {
-                                  roll=value;
-                                });
-                              },
-                              ),
-                        ),Spacer(
+                        Spacer(
                           flex: 1,
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                               vertical: 10, horizontal: 30),
                           child: TextFormField(
-                              decoration: InputDecoration(
-                                  hintText: 'Enter name',
-                                  hintStyle: TextStyle(color: Colors.black)),
-                              validator: (String? value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Enter this field';
-                                }
-                                return null;
-                              },
-                              onChanged: (value){
-                                setState(() {
-                                  name=value;
-                                });
-                              },
-                              ),
-                        ),Spacer(
-                          flex:1
+                            decoration: InputDecoration(
+                                hintText: 'Enter roll number',
+                                hintStyle: TextStyle(color: Colors.black)),
+                            validator: (String? value) {
+                              if (value == null ||
+                                  value.isEmpty ||
+                                  value.length != 6) {
+                                return 'Enter this field';
+                              }
+                              return null;
+                            },
+                            onChanged: (value) {
+                              setState(() {
+                                roll = value;
+                              });
+                            },
+                          ),
                         ),
+                        Spacer(
+                          flex: 1,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 30),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                hintText: 'Enter name',
+                                hintStyle: TextStyle(color: Colors.black)),
+                            validator: (String? value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Enter this field';
+                              }
+                              return null;
+                            },
+                            onChanged: (value) {
+                              setState(() {
+                                name = value;
+                              });
+                            },
+                          ),
+                        ),
+                        Spacer(flex: 1),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                               vertical: 10, horizontal: 30),
@@ -131,46 +139,51 @@ class _studentCreateState extends State<studentCreate> {
                                 hintText: 'Enter Password',
                                 hintStyle: TextStyle(color: Colors.black)),
                             validator: (String? value) {
-                              if (value == null || value.isEmpty || value.length<7) {
+                              if (value == null ||
+                                  value.isEmpty ||
+                                  value.length < 7) {
                                 return 'Enter this field';
                               }
                               return null;
                             },
-                            onChanged: (value){
+                            onChanged: (value) {
                               setState(() {
-                                password=value;
+                                password = value;
                               });
                             },
                           ),
-                        ),Spacer(
-                            flex:1
                         ),
+                        Spacer(flex: 1),
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 30),
-                          child: DropdownButton<String>(
-                            value: course,
-                            itemHeight: 75,
-                            icon:  Icon(Icons.arrow_downward),
-                            onChanged: (String? value){
-                              setState(() {
-                                course=value!;
-                              });
-                            },
-                            items: options.map<DropdownMenuItem<String>>((String value){
-                              return DropdownMenuItem(child: SizedBox(height:100,width:250,child: Text(value)),value: value,);
-                            }
-                            ).toList(),
-                          )
-                          ),
-                        if(error_course==1)
-                          Text("Select valid")
-                        ,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 30),
+                            child: DropdownButton<String>(
+                              value: course,
+                              itemHeight: 75,
+                              icon: Icon(Icons.arrow_downward),
+                              onChanged: (String? value) {
+                                setState(() {
+                                  course = value!;
+                                });
+                              },
+                              items: options.map<DropdownMenuItem<String>>(
+                                  (String value) {
+                                return DropdownMenuItem(
+                                  child: SizedBox(
+                                      height: 100,
+                                      width: 250,
+                                      child: Text(value)),
+                                  value: value,
+                                );
+                              }).toList(),
+                            )),
+                        if (error_course == 1) Text("Select valid"),
                         Spacer(
                           flex: 1,
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 35),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 35),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -178,28 +191,30 @@ class _studentCreateState extends State<studentCreate> {
                               Text(dob),
                               Spacer(),
                               IconButton(
-                                  onPressed: (){
+                                  onPressed: () {
                                     showDatePicker(
-                                        context: context,
-                                        initialDate: DateTime.now(),
-                                        firstDate: DateTime(1970),
-                                        lastDate: DateTime.now()
-                                    ).then((value) {
+                                            context: context,
+                                            initialDate: DateTime.now(),
+                                            firstDate: DateTime(1970),
+                                            lastDate: DateTime.now())
+                                        .then((value) {
                                       setState(() {
-                                        date=value;
-                                        dob=DateFormat("dd-MM-yyyy").format(date);
+                                        date = value;
+                                        dob = DateFormat("dd-MM-yyyy")
+                                            .format(date);
                                       });
                                     });
                                   },
-                                  icon: Icon(Icons.calendar_today)
-                              )
+                                  icon: Icon(Icons.calendar_today))
                             ],
                           ),
-                        ),Spacer(
+                        ),
+                        Spacer(
                           flex: 1,
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 35),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 35),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -207,24 +222,25 @@ class _studentCreateState extends State<studentCreate> {
                               Text(doj),
                               Spacer(),
                               IconButton(
-                                  onPressed: (){
+                                  onPressed: () {
                                     showDatePicker(
-                                        context: context,
-                                        initialDate: DateTime.now(),
-                                        firstDate: DateTime(1970),
-                                        lastDate: DateTime.now()
-                                    ).then((value) {
+                                            context: context,
+                                            initialDate: DateTime.now(),
+                                            firstDate: DateTime(1970),
+                                            lastDate: DateTime.now())
+                                        .then((value) {
                                       setState(() {
-                                        date=value;
-                                        doj=DateFormat("dd-MM-yyyy").format(date);
+                                        date = value;
+                                        doj = DateFormat("dd-MM-yyyy")
+                                            .format(date);
                                       });
                                     });
                                   },
-                                  icon: Icon(Icons.calendar_today)
-                              )
+                                  icon: Icon(Icons.calendar_today))
                             ],
                           ),
-                        ),Spacer(
+                        ),
+                        Spacer(
                           flex: 1,
                         )
                       ],
@@ -232,18 +248,17 @@ class _studentCreateState extends State<studentCreate> {
                   ),
                 ),
               ),
-              SizedBox(height:30),
+              SizedBox(height: 30),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 60),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 60),
                 child: ElevatedButton(
                     onPressed: () {
-                      if(_formKey.currentState!.validate()){
-
+                      if (_formKey.currentState!.validate()) {
                         print("$roll , $name , $course , $dob");
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Student added !'))
-                        );
+                            SnackBar(content: Text('Student added !')));
                       }
                     },
                     child: Row(
@@ -254,10 +269,9 @@ class _studentCreateState extends State<studentCreate> {
                         Spacer(),
                         Icon(Icons.arrow_forward)
                       ],
-                    )
-                ),
+                    )),
               ),
-              SizedBox(height:30),
+              SizedBox(height: 30),
             ],
           )),
     );

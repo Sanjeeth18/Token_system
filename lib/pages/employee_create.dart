@@ -9,16 +9,16 @@ class employeeCreate extends StatefulWidget {
 }
 
 class _employeeCreateState extends State<employeeCreate> {
-  var roll,name,course,dob="enter DOB",date,doj="enter DOJ";
+  var roll, name, course, dob = "enter DOB", date, doj = "enter DOJ";
 
-  final GlobalKey<FormState> _formKey=GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         gradient:
-        LinearGradient(colors: [Color(0xff000428), Color(0xff004e92)]),
+            LinearGradient(colors: [Color(0xff000428), Color(0xff004e92)]),
       ),
       child: Scaffold(
           backgroundColor: Colors.transparent,
@@ -27,12 +27,16 @@ class _employeeCreateState extends State<employeeCreate> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Spacer(flex: 2,),
+                Spacer(
+                  flex: 2,
+                ),
                 Text(
                   "Create Employee account",
                   style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
-                Spacer(flex: 1,),
+                Spacer(
+                  flex: 1,
+                ),
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Container(
@@ -45,7 +49,9 @@ class _employeeCreateState extends State<employeeCreate> {
                       key: _formKey,
                       child: Column(
                         children: [
-                          Spacer(flex: 1,),
+                          Spacer(
+                            flex: 1,
+                          ),
                           Padding(
                             padding: const EdgeInsets.symmetric(
                                 vertical: 10, horizontal: 30),
@@ -59,13 +65,14 @@ class _employeeCreateState extends State<employeeCreate> {
                                 }
                                 return null;
                               },
-                              onChanged: (value){
+                              onChanged: (value) {
                                 setState(() {
-                                  roll=value;
+                                  roll = value;
                                 });
                               },
                             ),
-                          ),Spacer(
+                          ),
+                          Spacer(
                             flex: 1,
                           ),
                           Padding(
@@ -81,16 +88,17 @@ class _employeeCreateState extends State<employeeCreate> {
                                 }
                                 return null;
                               },
-                              onChanged: (value){
+                              onChanged: (value) {
                                 setState(() {
-                                  name=value;
+                                  name = value;
                                 });
                               },
                             ),
-                          ),Spacer(
-                              flex:1
-                          ),Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 35),
+                          ),
+                          Spacer(flex: 1),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 35),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -98,21 +106,21 @@ class _employeeCreateState extends State<employeeCreate> {
                                 Text(doj),
                                 Spacer(),
                                 IconButton(
-                                    onPressed: (){
+                                    onPressed: () {
                                       showDatePicker(
-                                          context: context,
-                                          initialDate: DateTime.now(),
-                                          firstDate: DateTime(1970),
-                                          lastDate: DateTime.now()
-                                      ).then((value) {
+                                              context: context,
+                                              initialDate: DateTime.now(),
+                                              firstDate: DateTime(1970),
+                                              lastDate: DateTime.now())
+                                          .then((value) {
                                         setState(() {
-                                          date=value;
-                                          doj=DateFormat("dd-MM-yyyy").format(date);
+                                          date = value;
+                                          doj = DateFormat("dd-MM-yyyy")
+                                              .format(date);
                                         });
                                       });
                                     },
-                                    icon: Icon(Icons.calendar_today)
-                                )
+                                    icon: Icon(Icons.calendar_today))
                               ],
                             ),
                           ),
@@ -120,7 +128,8 @@ class _employeeCreateState extends State<employeeCreate> {
                             flex: 1,
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 35),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 35),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -128,24 +137,25 @@ class _employeeCreateState extends State<employeeCreate> {
                                 Text(dob),
                                 Spacer(),
                                 IconButton(
-                                    onPressed: (){
+                                    onPressed: () {
                                       showDatePicker(
-                                          context: context,
-                                          initialDate: DateTime.now(),
-                                          firstDate: DateTime(1970),
-                                          lastDate: DateTime.now()
-                                      ).then((value) {
+                                              context: context,
+                                              initialDate: DateTime.now(),
+                                              firstDate: DateTime(1970),
+                                              lastDate: DateTime.now())
+                                          .then((value) {
                                         setState(() {
-                                          date=value;
-                                          dob=DateFormat("dd-MM-yyyy").format(date);
+                                          date = value;
+                                          dob = DateFormat("dd-MM-yyyy")
+                                              .format(date);
                                         });
                                       });
                                     },
-                                    icon: Icon(Icons.calendar_today)
-                                )
+                                    icon: Icon(Icons.calendar_today))
                               ],
                             ),
-                          ),Spacer(
+                          ),
+                          Spacer(
                             flex: 1,
                           )
                         ],
@@ -153,17 +163,19 @@ class _employeeCreateState extends State<employeeCreate> {
                     ),
                   ),
                 ),
-                Spacer(flex: 2,),
+                Spacer(
+                  flex: 2,
+                ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 60),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 60),
                   child: ElevatedButton(
                       onPressed: () {
-                        if(_formKey.currentState!.validate()){
+                        if (_formKey.currentState!.validate()) {
                           print("$roll , $name , $course , $dob");
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Employee added !'))
-                          );
+                              SnackBar(content: Text('Employee added !')));
                         }
                       },
                       child: Row(
@@ -174,10 +186,11 @@ class _employeeCreateState extends State<employeeCreate> {
                           Spacer(),
                           Icon(Icons.arrow_forward)
                         ],
-                      )
-                  ),
+                      )),
                 ),
-                Spacer(flex: 2,),
+                Spacer(
+                  flex: 2,
+                ),
               ],
             ),
           )),
