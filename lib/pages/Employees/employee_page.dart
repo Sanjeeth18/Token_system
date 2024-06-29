@@ -11,7 +11,7 @@ class _workerMenuState extends State<workerMenu> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
           gradient:
               LinearGradient(colors: [Color(0xff000428), Color(0xff004e92)])),
       child: Scaffold(
@@ -27,10 +27,20 @@ class _workerMenuState extends State<workerMenu> {
                   onPressed: () {
                     Navigator.pushNamed(context, '/scan');
                   },
-                  child: Text("Scan QR code"),
+                  child: const Text("Scan QR code"),
                 ),
               ],
             ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/');
+                    },
+                    child: const Text("Log Out")),
+              ),
+            )
           ],
         ),
       ),

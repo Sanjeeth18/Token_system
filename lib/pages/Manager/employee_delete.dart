@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:token_system/database/Firebase.dart';
 
 class employeeDelete extends StatefulWidget {
   employeeDelete({super.key});
@@ -9,13 +10,14 @@ class employeeDelete extends StatefulWidget {
 
 class _employeeDeleteState extends State<employeeDelete> {
   var roll;
+  late bool valid;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient:
             LinearGradient(colors: [Color(0xff000428), Color(0xff004e92)]),
       ),
@@ -26,20 +28,20 @@ class _employeeDeleteState extends State<employeeDelete> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Spacer(
+                const Spacer(
                   flex: 2,
                 ),
-                Text(
+                const Text(
                   "Delete employee account",
                   style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
-                Spacer(
+                const Spacer(
                   flex: 1,
                 ),
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Container(
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.all(Radius.circular(20)),
                     ),
@@ -52,7 +54,7 @@ class _employeeDeleteState extends State<employeeDelete> {
                             padding: const EdgeInsets.symmetric(
                                 vertical: 10, horizontal: 30),
                             child: TextFormField(
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                   hintText: 'Enter employee code',
                                   hintStyle: TextStyle(color: Colors.black)),
                               validator: (String? value) {
@@ -73,22 +75,31 @@ class _employeeDeleteState extends State<employeeDelete> {
                     ),
                   ),
                 ),
-                Spacer(
+                const Spacer(
                   flex: 2,
                 ),
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(vertical: 10, horizontal: 60),
                   child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-                          print("$roll");
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('employee deleted !')));
+                         // print("$roll");
+                          valid =
+                              await Firestore().delete_student_employee(roll);
+                          if (valid) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('employee deleted !')));
+                          } else {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('$roll not exists.')));
+                          }
                         }
                       },
-                      child: Row(
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -98,7 +109,7 @@ class _employeeDeleteState extends State<employeeDelete> {
                         ],
                       )),
                 ),
-                Spacer(
+                const Spacer(
                   flex: 2,
                 ),
               ],

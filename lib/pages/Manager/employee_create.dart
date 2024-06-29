@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../database/firebase.dart';
 
 class employeeCreate extends StatefulWidget {
   employeeCreate({super.key});
@@ -9,14 +10,16 @@ class employeeCreate extends StatefulWidget {
 }
 
 class _employeeCreateState extends State<employeeCreate> {
-  var roll, name, course, dob = "enter DOB", date, doj = "enter DOJ";
+  var id, name, dob = "Enter DOB", date, doj = "Enter DOJ", password;
+  late bool valid;
+  bool obsecure = true;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient:
             LinearGradient(colors: [Color(0xff000428), Color(0xff004e92)]),
       ),
@@ -27,20 +30,20 @@ class _employeeCreateState extends State<employeeCreate> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Spacer(
+                const Spacer(
                   flex: 2,
                 ),
-                Text(
+                const Text(
                   "Create Employee account",
                   style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
-                Spacer(
+                const Spacer(
                   flex: 1,
                 ),
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Container(
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.all(Radius.circular(20)),
                     ),
@@ -49,15 +52,15 @@ class _employeeCreateState extends State<employeeCreate> {
                       key: _formKey,
                       child: Column(
                         children: [
-                          Spacer(
+                          const Spacer(
                             flex: 1,
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(
                                 vertical: 10, horizontal: 30),
                             child: TextFormField(
-                              decoration: InputDecoration(
-                                  hintText: 'Enter employee code',
+                              decoration: const InputDecoration(
+                                  hintText: 'Enter employee id',
                                   hintStyle: TextStyle(color: Colors.black)),
                               validator: (String? value) {
                                 if (value == null || value.isEmpty) {
@@ -67,19 +70,19 @@ class _employeeCreateState extends State<employeeCreate> {
                               },
                               onChanged: (value) {
                                 setState(() {
-                                  roll = value;
+                                  id = value;
                                 });
                               },
                             ),
                           ),
-                          Spacer(
+                          const Spacer(
                             flex: 1,
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(
                                 vertical: 10, horizontal: 30),
                             child: TextFormField(
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                   hintText: 'Enter name',
                                   hintStyle: TextStyle(color: Colors.black)),
                               validator: (String? value) {
@@ -95,7 +98,49 @@ class _employeeCreateState extends State<employeeCreate> {
                               },
                             ),
                           ),
-                          Spacer(flex: 1),
+                          const Spacer(flex: 1),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 30),
+                            child: TextFormField(
+                              decoration: InputDecoration(
+                                hintText: 'Enter Password',
+                                hintStyle: const TextStyle(color: Colors.black),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    obsecure==true
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      obsecure = !obsecure;
+                                    });
+                                  },
+                                ),
+                              ),
+                              obscureText: obsecure,
+                              validator: (String? value) {
+                                String pattern =
+                                    r'^(?=.*[!@#$%^&*(),.?":{}|<>])(?=.*\d)[A-Za-z\d!@#$%^&*(),.?":{}|<>]{10,}$';
+                                RegExp expression = RegExp(pattern);
+                                if (value == null || value.isEmpty) {
+                                  return 'Enter this field';
+                                } else if (value.length < 10) {
+                                  return 'Password must be at least 10 characters long';
+                                } else if (!expression.hasMatch(value)) {
+                                  return 'Password must contain at least one symbol and one number';
+                                }
+                                return null;
+                              },
+                              onChanged: (value) {
+                                setState(() {
+                                  password = value;
+                                });
+                              },
+                            ),
+                          ),
+                          const Spacer(flex: 1),
                           Padding(
                             padding: const EdgeInsets.symmetric(
                                 vertical: 10, horizontal: 35),
@@ -104,7 +149,7 @@ class _employeeCreateState extends State<employeeCreate> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(doj),
-                                Spacer(),
+                                const Spacer(),
                                 IconButton(
                                     onPressed: () {
                                       showDatePicker(
@@ -120,11 +165,11 @@ class _employeeCreateState extends State<employeeCreate> {
                                         });
                                       });
                                     },
-                                    icon: Icon(Icons.calendar_today))
+                                    icon: const Icon(Icons.calendar_today))
                               ],
                             ),
                           ),
-                          Spacer(
+                          const Spacer(
                             flex: 1,
                           ),
                           Padding(
@@ -135,7 +180,7 @@ class _employeeCreateState extends State<employeeCreate> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(dob),
-                                Spacer(),
+                                const Spacer(),
                                 IconButton(
                                     onPressed: () {
                                       showDatePicker(
@@ -151,11 +196,11 @@ class _employeeCreateState extends State<employeeCreate> {
                                         });
                                       });
                                     },
-                                    icon: Icon(Icons.calendar_today))
+                                    icon: const Icon(Icons.calendar_today))
                               ],
                             ),
                           ),
-                          Spacer(
+                          const Spacer(
                             flex: 1,
                           )
                         ],
@@ -163,22 +208,32 @@ class _employeeCreateState extends State<employeeCreate> {
                     ),
                   ),
                 ),
-                Spacer(
+                const Spacer(
                   flex: 2,
                 ),
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(vertical: 10, horizontal: 60),
                   child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-                          print("$roll , $name , $course , $dob");
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Employee added !')));
+                        //  print("$id , $name  , $dob");
+                          valid = await Firestore()
+                              .CreateEmployee(name, id, dob, doj, password);
+                          if (valid == true) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Employee added !')));
+                          } else {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Already Exists !')));
+                          }
                         }
                       },
-                      child: Row(
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -188,7 +243,7 @@ class _employeeCreateState extends State<employeeCreate> {
                         ],
                       )),
                 ),
-                Spacer(
+                const Spacer(
                   flex: 2,
                 ),
               ],

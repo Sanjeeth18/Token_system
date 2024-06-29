@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class Nveg_use extends StatefulWidget {
-  const Nveg_use({super.key});
+  final String roll;
+  Nveg_use({super.key, required this.roll});
 
   @override
   State<Nveg_use> createState() => _Nveg_useState();
@@ -13,7 +14,7 @@ class _Nveg_useState extends State<Nveg_use> {
   Widget build(BuildContext context) {
     return Material(
       child: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xff000428), Color(0xff004e92)],
           ),
@@ -22,31 +23,31 @@ class _Nveg_useState extends State<Nveg_use> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Spacer(
+            const Spacer(
               flex: 7,
             ),
-            Text(
+            const Text(
               'Non-Veg Token',
               style: TextStyle(color: Colors.white, fontSize: 30),
             ),
-            Spacer(
+            const Spacer(
               flex: 1,
             ),
-            Text(
+            const Text(
               'Scan to use',
               style: TextStyle(color: Colors.white, fontSize: 25),
             ),
-            Spacer(
+            const Spacer(
               flex: 4,
             ),
             QrImageView(
-              data: 'Non Veg token',
+              data: '${widget.roll} Non-Veg 1',
               backgroundColor: Colors.white,
               version: QrVersions.auto,
               size: 320,
               gapless: false,
             ),
-            Spacer(
+            const Spacer(
               flex: 2,
             ),
             Container(
@@ -57,7 +58,7 @@ class _Nveg_useState extends State<Nveg_use> {
                     Navigator.pop(context);
                   });
                 },
-                child: Row(
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -73,7 +74,7 @@ class _Nveg_useState extends State<Nveg_use> {
                 ),
               ),
             ),
-            Spacer(
+            const Spacer(
               flex: 7,
             )
           ],
@@ -84,7 +85,8 @@ class _Nveg_useState extends State<Nveg_use> {
 }
 
 class Veg_use extends StatefulWidget {
-  const Veg_use({super.key});
+  final String roll;
+  Veg_use({super.key, required this.roll});
 
   @override
   State<Veg_use> createState() => _Veg_useState();
@@ -95,7 +97,7 @@ class _Veg_useState extends State<Veg_use> {
   Widget build(BuildContext context) {
     return Material(
       child: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xff000428), Color(0xff004e92)],
           ),
@@ -104,31 +106,31 @@ class _Veg_useState extends State<Veg_use> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Spacer(
+            const Spacer(
               flex: 7,
             ),
-            Text(
+            const Text(
               'Veg Token',
               style: TextStyle(color: Colors.white, fontSize: 30),
             ),
-            Spacer(
+            const Spacer(
               flex: 1,
             ),
-            Text(
+            const Text(
               'Scan to use',
               style: TextStyle(color: Colors.white, fontSize: 25),
             ),
-            Spacer(
+            const Spacer(
               flex: 4,
             ),
             QrImageView(
-              data: 'Veg token',
+              data: '${widget.roll} Veg 1',
               backgroundColor: Colors.white,
               version: QrVersions.auto,
               size: 320,
               gapless: false,
             ),
-            Spacer(
+            const Spacer(
               flex: 2,
             ),
             Container(
@@ -139,7 +141,7 @@ class _Veg_useState extends State<Veg_use> {
                     Navigator.pop(context);
                   });
                 },
-                child: Row(
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -155,7 +157,7 @@ class _Veg_useState extends State<Veg_use> {
                 ),
               ),
             ),
-            Spacer(
+            const Spacer(
               flex: 7,
             )
           ],
@@ -166,7 +168,8 @@ class _Veg_useState extends State<Veg_use> {
 }
 
 class Egg_use extends StatefulWidget {
-  const Egg_use({super.key});
+  final String roll;
+  Egg_use({super.key, required this.roll});
 
   @override
   State<Egg_use> createState() => _Egg_useState();
@@ -179,7 +182,7 @@ class _Egg_useState extends State<Egg_use> {
   Widget build(BuildContext context) {
     return Material(
       child: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xff000428), Color(0xff004e92)],
           ),
@@ -188,21 +191,21 @@ class _Egg_useState extends State<Egg_use> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Spacer(
+            const Spacer(
               flex: 7,
             ),
-            Text(
+            const Text(
               'Egg Token',
               style: TextStyle(color: Colors.white, fontSize: 30),
             ),
-            Spacer(
+            const Spacer(
               flex: 1,
             ),
-            Text(
+            const Text(
               'Scan to use',
               style: TextStyle(color: Colors.white, fontSize: 25),
             ),
-            Spacer(
+            const Spacer(
               flex: 1,
             ),
             Row(
@@ -217,10 +220,10 @@ class _Egg_useState extends State<Egg_use> {
                       }
                     });
                   },
-                  icon: Icon(Icons.remove),
+                  icon: const Icon(Icons.remove),
                 ),
                 Container(
-                    padding: EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(10),
                     color: Colors.white,
                     child: Text('$count')),
                 IconButton(
@@ -230,10 +233,10 @@ class _Egg_useState extends State<Egg_use> {
                         if (generate == 0) count += 1;
                       });
                     },
-                    icon: Icon(Icons.add)),
+                    icon: const Icon(Icons.add)),
               ],
             ),
-            Spacer(
+            const Spacer(
               flex: 1,
             ),
             ElevatedButton(
@@ -242,22 +245,22 @@ class _Egg_useState extends State<Egg_use> {
                     generate = 1;
                   });
                 },
-                child: Text(
+                child: const Text(
                   'Generate',
                   style: TextStyle(color: Colors.green),
                 )),
-            Spacer(
+            const Spacer(
               flex: 4,
             ),
             if (generate == 1)
               QrImageView(
-                data: 'Egg token $count',
+                data: '${widget.roll} Eggs $count',
                 backgroundColor: Colors.white,
                 version: QrVersions.auto,
                 size: 320,
                 gapless: false,
               ),
-            Spacer(
+            const Spacer(
               flex: 2,
             ),
             if (generate == 1)
@@ -267,12 +270,12 @@ class _Egg_useState extends State<Egg_use> {
                     generate = 0;
                   });
                 },
-                child: Text(
+                child: const Text(
                   'Undo',
                   style: TextStyle(color: Colors.red),
                 ),
               ),
-            Spacer(flex: 2),
+            const Spacer(flex: 2),
             Container(
               width: 100,
               child: ElevatedButton(
@@ -281,7 +284,7 @@ class _Egg_useState extends State<Egg_use> {
                     Navigator.pop(context);
                   });
                 },
-                child: Row(
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -297,7 +300,7 @@ class _Egg_useState extends State<Egg_use> {
                 ),
               ),
             ),
-            Spacer(
+            const Spacer(
               flex: 7,
             )
           ],

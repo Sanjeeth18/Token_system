@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:token_system/database/firebase.dart';
 
 class managerPage extends StatefulWidget {
-  const managerPage({super.key});
+  final tokens;
+  managerPage({super.key, required this.tokens});
 
   @override
   State<managerPage> createState() => _managerPageState();
@@ -20,16 +22,16 @@ class _managerPageState extends State<managerPage> {
     now = DateTime.now();
     day = now.toUtc().weekday;
     if (day == 5 || day == 2 || day == 7) {
-      now = now.add(Duration(days: 2));
+      now = now.add(const Duration(days: 2));
     } else if (day == 1 || day == 3 || day == 6) {
-      now = now.add(Duration(days: 1));
+      now = now.add(const Duration(days: 1));
     } else if (day == 4) {
-      now = now.add(Duration(days: 3));
+      now = now.add(const Duration(days: 3));
     }
     formatter = DateFormat("dd-MM-yyyy\n(EEEE)");
     formattedDate = formatter.format(now);
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient:
             LinearGradient(colors: [Color(0xff000428), Color(0xff004e92)]),
       ),
@@ -41,17 +43,17 @@ class _managerPageState extends State<managerPage> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Spacer(
+              const Spacer(
                 flex: 1,
               ),
               Card(
                 child: Column(children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
                     child: Text('Token count on this day!'),
                   ),
                   Card(
-                    margin: EdgeInsets.all(10),
+                    margin: const EdgeInsets.all(10),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                           vertical: 6, horizontal: 20),
@@ -61,20 +63,20 @@ class _managerPageState extends State<managerPage> {
                       ),
                     ),
                   ),
-                  Divider(),
+                  //Divider(),
                   Row(
                     children: [
                       Expanded(
                         flex: 1,
                         child: Card(
-                          margin: EdgeInsets.all(20),
+                          margin: const EdgeInsets.all(20),
                           child: Column(
                             children: [
-                              Text(
+                              const Text(
                                 "Veg token \npurchased",
                                 textAlign: TextAlign.center,
                               ),
-                              Text('100'),
+                              Text("${widget.tokens[1]}"),
                             ],
                           ),
                         ),
@@ -82,34 +84,34 @@ class _managerPageState extends State<managerPage> {
                       Expanded(
                         flex: 1,
                         child: Card(
-                          margin: EdgeInsets.all(20),
+                          margin: const EdgeInsets.all(20),
                           child: Column(
                             children: [
-                              Text(
+                              const Text(
                                 "Non-Veg token\npurchased",
                                 textAlign: TextAlign.center,
                               ),
-                              Text('200'),
+                              Text("${widget.tokens[0]}"),
                             ],
                           ),
                         ),
                       )
                     ],
                   ),
-                  Divider(),
+                  //Divider(),
                   Row(
                     children: [
                       Expanded(
                         flex: 1,
                         child: Card(
-                          margin: EdgeInsets.all(20),
+                          margin: const EdgeInsets.all(20),
                           child: Column(
                             children: [
-                              Text(
+                              const Text(
                                 "Veg token \nused",
                                 textAlign: TextAlign.center,
                               ),
-                              Text('100'),
+                              Text("${widget.tokens[3]}"),
                             ],
                           ),
                         ),
@@ -117,14 +119,14 @@ class _managerPageState extends State<managerPage> {
                       Expanded(
                         flex: 1,
                         child: Card(
-                          margin: EdgeInsets.all(20),
+                          margin: const EdgeInsets.all(20),
                           child: Column(
                             children: [
-                              Text(
+                              const Text(
                                 "Non-Veg token\nused",
                                 textAlign: TextAlign.center,
                               ),
-                              Text('200'),
+                              Text("${widget.tokens[2]}"),
                             ],
                           ),
                         ),
@@ -132,21 +134,26 @@ class _managerPageState extends State<managerPage> {
                     ],
                   ),
                   ElevatedButton(
-                      onPressed: () {},
-                      child: Row(
+                      onPressed: ()  {
+                            // setState(()async {
+                            //                           widget.tokens=await Firestore().readTokens();
+
+                            // });
+                      },
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [Text('Refresh  '), Icon(Icons.refresh)],
                       )),
                 ]),
               ),
-              Spacer(
+              const Spacer(
                 flex: 1,
               ),
               Card(
                 child: Column(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
                       child: Text(
                         'Use these to make \nchanges in the users',
                         textAlign: TextAlign.center,
@@ -158,8 +165,8 @@ class _managerPageState extends State<managerPage> {
                           elevation: 0,
                           isExpanded: true,
                           iconSize: 30,
-                          icon: Icon(Icons.arrow_downward),
-                          items: [
+                          icon: const Icon(Icons.arrow_downward),
+                          items: const [
                             DropdownMenuItem(
                               value: '0',
                               child: Text('Create new account'),
@@ -199,8 +206,8 @@ class _managerPageState extends State<managerPage> {
                           elevation: 0,
                           isExpanded: true,
                           iconSize: 30,
-                          icon: Icon(Icons.arrow_downward),
-                          items: [
+                          icon: const Icon(Icons.arrow_downward),
+                          items: const [
                             DropdownMenuItem(
                               value: '0',
                               child: Text('Delete an account'),
@@ -229,15 +236,27 @@ class _managerPageState extends State<managerPage> {
                           onChanged: (value) {
                             if (value == '1') {
                               Navigator.pushNamed(context, '/studentD');
-                            } else if (value == '2') {}
+                            } else if (value == '2') {
+                              Navigator.pushNamed(context, '/employeeD');
+                            }
                           }),
                     ),
                   ],
                 ),
               ),
-              Spacer(
+              const Spacer(
                 flex: 1,
               ),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/');
+                      },
+                      child: const Text("Log Out")),
+                ),
+              )
             ],
           ),
         ),

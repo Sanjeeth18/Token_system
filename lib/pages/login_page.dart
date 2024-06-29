@@ -1,19 +1,18 @@
 import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:token_system/pages/employee_create.dart';
-import 'package:token_system/pages/employee_delete.dart';
-import 'package:token_system/pages/main_page_organise.dart';
-import 'package:token_system/pages/manger.dart';
-import 'package:token_system/pages/register_item.dart';
-import 'package:token_system/pages/student_create.dart';
-import 'package:token_system/pages/student_delete.dart';
-import 'package:token_system/pages/useit_page.dart';
-import 'package:token_system/pages/scanner_page.dart';
-import 'package:token_system/pages/employee_page.dart';
+import 'package:token_system/pages/Manager/employee_create.dart';
+import 'package:token_system/pages/Manager/employee_delete.dart';
+import 'package:token_system/pages/Students/home_page.dart';
+import 'package:token_system/pages/Manager/manger.dart';
+import 'package:token_system/pages/Students/register_item.dart';
+import 'package:token_system/pages/Manager/student_create.dart';
+import 'package:token_system/pages/Manager/student_delete.dart';
+import 'package:token_system/pages/Students/useit_page.dart';
+import 'package:token_system/pages/Employees/scanner_page.dart';
+import 'package:token_system/pages/Employees/employee_page.dart';
+import '../database/firebase.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,26 +31,59 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => Register(),
       child: MaterialApp(
         initialRoute: '/',
-        routes: {
-          '/': (context) => LockScreen(),
-          '/home': (context) => const MyHomePage(),
-          '/useNV': (context) => const Nveg_use(),
-          '/useV': (context) => const Veg_use(),
-          '/useE': (context) => const Egg_use(),
-          '/scan': (context) => const scannerPage(),
-          '/worker': (context) => const workerMenu(),
-          '/manager': (context) => const managerPage(),
-          '/studentC': (context) => studentCreate(),
-          '/studentD': (context) => studentDelete(),
-          '/employeeC': (context) => employeeCreate(),
-          '/employeeD': (context) => employeeDelete(),
+        onGenerateRoute: (settings) {
+          switch (settings.name) {
+            case '/':
+              return MaterialPageRoute(builder: (_) => LockScreen());
+            case '/home':
+              final args = settings.arguments as Map<String, dynamic>;
+              return MaterialPageRoute(
+                builder: (_) => HomePage(
+                  roll: args['roll'],
+                  tokens: args['tokens'],
+                ),
+              );
+            case '/useNV':
+              final roll = settings.arguments as String;
+              return MaterialPageRoute(
+                  builder: (_) => Nveg_use(
+                        roll: roll,
+                      ));
+            case '/useV':
+              final roll = settings.arguments as String;
+
+              return MaterialPageRoute(
+                  builder: (_) => Veg_use(
+                        roll: roll,
+                      ));
+            case '/useE':
+              final roll = settings.arguments as String;
+
+              return MaterialPageRoute(builder: (_) => Egg_use(roll: roll));
+            case '/scan':
+              return MaterialPageRoute(builder: (_) => const scannerPage());
+            case '/worker':
+              return MaterialPageRoute(builder: (_) => const workerMenu());
+            case '/manager':
+              final total_counts = settings.arguments as List<int>;
+              return MaterialPageRoute(builder: (_) =>  managerPage(tokens: total_counts,));
+            case '/studentC':
+              return MaterialPageRoute(builder: (_) => studentCreate());
+            case '/studentD':
+              return MaterialPageRoute(builder: (_) => studentDelete());
+            case '/employeeC':
+              return MaterialPageRoute(builder: (_) => employeeCreate());
+            case '/employeeD':
+              return MaterialPageRoute(builder: (_) => employeeDelete());
+            default:
+              return null;
+          }
         },
         title: 'Flutter Demo',
         theme: ThemeData(
@@ -74,14 +106,17 @@ class _LockScreenState extends State<LockScreen> {
   late String username;
   late String password;
   late bool valid;
+  List<int> tokens = [0, 0, 0];
 
   @override
   Widget build(BuildContext context) {
     switch (obsecure) {
       case true:
         eye = const Icon(Icons.visibility_off);
+        break;
       case false:
         eye = const Icon(Icons.visibility);
+        break;
     }
     return Container(
       decoration: const BoxDecoration(
@@ -137,7 +172,6 @@ class _LockScreenState extends State<LockScreen> {
                         border: OutlineInputBorder(),
                         labelText: 'Roll no',
                       ),
-                      //onSubmitted: getpassword(),
                     ),
                   ),
                 ),
@@ -161,12 +195,7 @@ class _LockScreenState extends State<LockScreen> {
                           icon: eye,
                           onPressed: () {
                             setState(() {
-                              switch (obsecure) {
-                                case true:
-                                  obsecure = false;
-                                case false:
-                                  obsecure = true;
-                              }
+                              obsecure = !obsecure;
                             });
                           },
                         ),
@@ -182,35 +211,28 @@ class _LockScreenState extends State<LockScreen> {
               ),
               ElevatedButton(
                 onPressed: () async {
-                  valid = await checkcredentials(context, username, password);
+                  valid = await Firestore()
+                      .checkCredentials(context, username, password);
                   if (valid == true) {
-                    if (username[0].toLowerCase() == 's') {
+                    if (username[0].toLowerCase() == 'e') {
                       Navigator.pushNamed(context, '/worker');
                     }
-                    if (username[0].toLowerCase() == 'h') {
-                      Navigator.pushNamed(context, '/home');
+                    if (username[0].toLowerCase() == '2') {
+                      print("First Tokens: $tokens");
+                      tokens = await Firestore()
+                          .readstudentTokenData(tokens, username);
+
+                      print("The tokens : $tokens");
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  HomePage(roll: username, tokens: tokens)));
                     }
-                    if (username[0] == 'M') {
-                      Navigator.pushNamed(context, '/manager');
+                    if (username[0].toLowerCase() == 'm') {
+                      tokens = await Firestore().readTokens();
+                      Navigator.pushNamed(context, '/manager',arguments: tokens);
                     }
-                  } else {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text("Error"),
-                          content: const Text("Enter Valid Details"),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text("OK"),
-                            ),
-                          ],
-                        );
-                      },
-                    );
                   }
                 },
                 child: const Text.rich(
@@ -224,63 +246,5 @@ class _LockScreenState extends State<LockScreen> {
         ),
       ),
     );
-  }
-}
-
-Future<bool> checkcredentials(
-    BuildContext context, String username, String password) async {
-  try {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('Username and Password')
-        .doc(username) // Assuming document ID is the username
-        .get();
-    if (snapshot.exists) {
-      final storedPassword = snapshot.data()?['Password'];
-      if (storedPassword == password) {
-        return true;
-      } else {
-        // Password doesn't match
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text("Error"),
-              content: const Text("Incorrect password"),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text("OK"),
-                ),
-              ],
-            );
-          },
-        );
-        return false;
-      }
-    } else {
-      // Username doesn't exist
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("Error"),
-            content: const Text("The username does not exist"),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text("OK"),
-              ),
-            ],
-          );
-        },
-      );
-      return false;
-    }
-  } catch (e) {
-    return false;
   }
 }
