@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "382286967544",
+    "project_id": "token-8ecb5",
+    "storage_bucket": "token-8ecb5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:382286967544:android:d3d87c2ada76d28724810d",
+        "android_client_info": {
+          "package_name": "com.example.token_system"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8BWFw6OYbUUji-RrCnsEwCl_x5Rbz4sM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
