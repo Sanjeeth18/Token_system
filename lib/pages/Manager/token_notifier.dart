@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:token_system/database/firebase.dart';
+import 'package:Tokens/database/firebase.dart';
 
 class TokenNotifier extends ChangeNotifier {
   List<int> _tokens = [0, 0, 0, 0]; 

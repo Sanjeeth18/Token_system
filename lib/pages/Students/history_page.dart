@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:token_system/pages/Students/home_page.dart';
-import 'package:token_system/pages/login_page.dart';
+import 'package:Tokens/pages/Students/home_page.dart';
+import 'package:Tokens/main.dart';
 
 class FavoritePage extends StatefulWidget {
   final List<int> purchased;

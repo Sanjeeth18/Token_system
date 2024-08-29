@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:token_system/database/firebase.dart';
-import 'package:token_system/pages/Students/history_page.dart';
-import 'package:token_system/pages/login_page.dart';
+import 'package:Tokens/database/firebase.dart';
+import 'package:Tokens/pages/Students/history_page.dart';
+import 'package:Tokens/main.dart';
 
 class HomePage extends StatefulWidget {
   final String roll;

@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:token_system/database/Firebase.dart';
+import 'package:Tokens/database/firebase.dart';
 
 class scannerPage extends StatefulWidget {
   const scannerPage({super.key});

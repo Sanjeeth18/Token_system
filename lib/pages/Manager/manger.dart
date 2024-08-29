@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:token_system/pages/Manager/token_notifier.dart';
+import 'package:Tokens/pages/Manager/token_notifier.dart';
 
 import '../../database/firebase.dart';
 
