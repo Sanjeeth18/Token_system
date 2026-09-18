@@ -13,8 +13,6 @@ import '../../widgets/error_dialog.dart';
 import '../../widgets/loading_overlay.dart';
 import '../../widgets/token_card.dart';
 import 'token_wallet_screen.dart';
-import '../employee/scanner_screen.dart';
-
 import '../profile/profile_screen.dart';
 
 class StudentHomeScreen extends ConsumerStatefulWidget {
@@ -254,114 +252,59 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Dual Quick Action Cards Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => ScannerScreen(studentRollNumber: widget.session.id),
-                              ),
-                            );
-                          },
-                          borderRadius: BorderRadius.circular(18),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.2),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.accent.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Icon(Icons.qr_code_scanner_rounded, color: AppColors.accentLight, size: 24),
-                                ),
-                                const SizedBox(height: 12),
-                                const Text(
-                                  'Scan Counter QR',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  'Instant meal booking',
-                                  style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                                ),
-                              ],
-                            ),
+                  // Quick Action Card
+                  InkWell(
+                    onTap: () => setState(() => _currentTabIndex = 1),
+                    borderRadius: BorderRadius.circular(18),
+                    child: Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: AppColors.vegGreen.withValues(alpha: 0.3)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
                           ),
-                        ),
+                        ],
                       ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: InkWell(
-                          onTap: () => setState(() => _currentTabIndex = 1),
-                          borderRadius: BorderRadius.circular(18),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: AppColors.vegGreen.withValues(alpha: 0.3)),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.2),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
+                              color: AppColors.vegGreen.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(14),
                             ),
+                            child: const Icon(Icons.account_balance_wallet_rounded, color: AppColors.vegGreen, size: 26),
+                          ),
+                          const SizedBox(width: 16),
+                          const Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.vegGreen.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Icon(Icons.account_balance_wallet_rounded, color: AppColors.vegGreen, size: 24),
-                                ),
-                                const SizedBox(height: 12),
-                                const Text(
+                                Text(
                                   'My Active Tokens',
                                   style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.textPrimary,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  'Show active pass QR',
-                                  style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Show active pass QR to redeem meal',
+                                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                                 ),
                               ],
                             ),
                           ),
-                        ),
+                          const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textMuted, size: 16),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                   const SizedBox(height: 24),
 
@@ -403,51 +346,62 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                       ),
                     ),
                     data: (counts) {
-                      final hasVegAlready =
-                          studentTokensAsync.valueOrNull?.veg != null &&
-                              studentTokensAsync.valueOrNull!.veg > 0;
-                      final hasNonVegAlready =
-                          studentTokensAsync.valueOrNull?.nonVeg != null &&
-                              studentTokensAsync.valueOrNull!.nonVeg > 0;
+                      final studentVeg =
+                          studentTokensAsync.valueOrNull?.veg ?? 0;
+                      final studentNonVeg =
+                          studentTokensAsync.valueOrNull?.nonVeg ?? 0;
 
-                      final vegAvailable = counts.isVegAvailable && !hasVegAlready;
-                      final nonVegAvailable =
-                          counts.isNonVegAvailable && _isNonVegDay && !hasNonVegAlready;
+                      // Veg Validation:
+                      // 1. studentTokens.veg > 0 => "Veg token already purchased."
+                      // 2. counts.veg <= 0 => "Veg tokens are sold out."
+                      final String? vegUnavailableReason = studentVeg > 0
+                          ? 'Veg token already purchased.'
+                          : (counts.veg <= 0 ? 'Veg tokens are sold out.' : null);
+
+                      final isVegAvailable = vegUnavailableReason == null;
+                      final vegSubtext = vegUnavailableReason ?? 'Available';
+
+                      // Non-Veg Validation:
+                      // 1. Not scheduled Non-Veg day => "Non-Veg meal is not served on this dining schedule."
+                      // 2. studentTokens.nonVeg > 0 => "Non-Veg token already purchased."
+                      // 3. counts.nonVeg <= 0 => "Non-Veg tokens are sold out."
+                      final String? nonVegUnavailableReason = !_isNonVegDay
+                          ? 'Non-Veg meal is not served on this dining schedule.'
+                          : (studentNonVeg > 0
+                              ? 'Non-Veg token already purchased.'
+                              : (counts.nonVeg <= 0 ? 'Non-Veg tokens are sold out.' : null));
+
+                      final isNonVegAvailable = nonVegUnavailableReason == null;
+                      final nonVegSubtext = nonVegUnavailableReason ?? 'Available';
 
                       return Column(
                         children: [
                           // Veg Option
                           TokenSelectionCard(
-                            title: 'Vegetarian Meal',
-                            subtitle: hasVegAlready
-                                ? 'Already active in wallet'
-                                : 'Available pool: ${counts.veg} tokens',
+                            title: 'Veg Meal',
+                            subtitle: vegSubtext,
                             icon: Icons.eco_rounded,
                             iconColor: AppColors.vegGreen,
                             badgeColor: AppColors.vegGreen,
                             isSelected: selection.wantsVeg,
-                            isAvailable: vegAvailable,
+                            isAvailable: isVegAvailable,
                             onToggle: () {
-                              if (!vegAvailable) return;
+                              if (!isVegAvailable) return;
                               ref.read(tokenSelectionProvider.notifier).toggleVeg();
                             },
                           ),
 
                           // Non-Veg Option
                           TokenSelectionCard(
-                            title: 'Non-Vegetarian Meal',
-                            subtitle: !_isNonVegDay
-                                ? 'Not served on this schedule'
-                                : hasNonVegAlready
-                                    ? 'Already active in wallet'
-                                    : 'Available pool: ${counts.nonVeg} tokens',
+                            title: 'Non-Veg Meal',
+                            subtitle: nonVegSubtext,
                             icon: Icons.restaurant_rounded,
                             iconColor: AppColors.nonVegRed,
                             badgeColor: AppColors.nonVegRed,
                             isSelected: selection.wantsNonVeg,
-                            isAvailable: nonVegAvailable,
+                            isAvailable: isNonVegAvailable,
                             onToggle: () {
-                              if (!nonVegAvailable) return;
+                              if (!isNonVegAvailable) return;
                               ref.read(tokenSelectionProvider.notifier).toggleNonVeg();
                             },
                           ),
@@ -499,13 +453,13 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                       color: AppColors.eggYellow, size: 28),
                                 ),
                                 const SizedBox(width: 16),
-                                Expanded(
+                                const Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
-                                          const Text(
+                                          Text(
                                             'Egg Tokens',
                                             style: TextStyle(
                                               fontSize: 16,
@@ -513,26 +467,11 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                               color: AppColors.textPrimary,
                                             ),
                                           ),
-                                          const SizedBox(width: 8),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.eggYellow.withValues(alpha: 0.15),
-                                              borderRadius: BorderRadius.circular(6),
-                                            ),
-                                            child: const Text(
-                                              '15/BATCH',
-                                              style: TextStyle(
-                                                fontSize: 9,
-                                                fontWeight: FontWeight.w800,
-                                                color: AppColors.eggYellow,
-                                              ),
-                                            ),
-                                          ),
+                                          SizedBox(width: 8),
                                         ],
                                       ),
-                                      const SizedBox(height: 4),
-                                      const Text(
+                                      SizedBox(height: 4),
+                                      Text(
                                         'Add in batches of 15 eggs',
                                         style: TextStyle(
                                           fontSize: 13,

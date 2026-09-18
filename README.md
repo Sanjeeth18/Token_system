@@ -206,6 +206,10 @@ service cloud.firestore {
     match /Tokens/{id} {
       allow read, write: if request.auth != null;
     }
+
+    match /Purchases/{id} {
+      allow read, write: if request.auth != null;
+    }
   }
 }
 ```

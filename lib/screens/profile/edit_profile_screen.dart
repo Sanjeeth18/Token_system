@@ -67,6 +67,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       );
 
       if (image != null) {
+        if (!mounted) return;
         CroppedFile? croppedFile;
         try {
           croppedFile = await ImageCropper().cropImage(
@@ -75,10 +76,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             uiSettings: [
               AndroidUiSettings(
                 toolbarTitle: 'Crop Circular Profile Picture',
-                toolbarColor: AppColors.surfaceElevated,
+                toolbarColor: AppColors.accent,
                 toolbarWidgetColor: Colors.white,
-                statusBarLight: false,
-                activeControlsWidgetColor: AppColors.accent,
                 initAspectRatio: CropAspectRatioPreset.square,
                 lockAspectRatio: true,
                 cropStyle: CropStyle.circle,
@@ -104,6 +103,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       AppFeedback.showSnackBar(
         context,
         'Error picking image: $e',

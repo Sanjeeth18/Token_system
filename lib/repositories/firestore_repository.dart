@@ -425,7 +425,7 @@ class FirestoreRepository {
       final timeStr = DateFormat('hh:mm a').format(now);
 
       if (selection.wantsVeg) {
-        await _db.collection('Purchases').add({
+        await _db.collection(AppConstants.colPurchases).add({
           'rollNumber': roll,
           'category': 'veg',
           'count': 1,
@@ -435,7 +435,7 @@ class FirestoreRepository {
         });
       }
       if (selection.wantsNonVeg) {
-        await _db.collection('Purchases').add({
+        await _db.collection(AppConstants.colPurchases).add({
           'rollNumber': roll,
           'category': 'nonveg',
           'count': 1,
@@ -445,7 +445,7 @@ class FirestoreRepository {
         });
       }
       if (selection.eggCount > 0) {
-        await _db.collection('Purchases').add({
+        await _db.collection(AppConstants.colPurchases).add({
           'rollNumber': roll,
           'category': 'egg',
           'count': selection.eggCount,
@@ -469,7 +469,7 @@ class FirestoreRepository {
   Future<List<TokenTransactionModel>> getStudentTransactionHistory(String roll) async {
     try {
       final snap = await _db
-          .collection('Purchases')
+          .collection(AppConstants.colPurchases)
           .where('rollNumber', isEqualTo: roll)
           .get();
 
