@@ -48,16 +48,16 @@ abstract class AppTheme {
         fontSize: 36, fontWeight: FontWeight.w400, color: AppColors.textPrimary,
       ),
       headlineLarge: GoogleFonts.outfit(
-        fontSize: 32, fontWeight: FontWeight.w600, color: AppColors.textPrimary,
+        fontSize: 32, fontWeight: FontWeight.w700, color: AppColors.textPrimary,
       ),
       headlineMedium: GoogleFonts.outfit(
-        fontSize: 28, fontWeight: FontWeight.w600, color: AppColors.textPrimary,
+        fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.textPrimary,
       ),
       headlineSmall: GoogleFonts.outfit(
-        fontSize: 24, fontWeight: FontWeight.w600, color: AppColors.textPrimary,
+        fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimary,
       ),
       titleLarge: GoogleFonts.outfit(
-        fontSize: 22, fontWeight: FontWeight.w600, color: AppColors.textPrimary,
+        fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimary,
       ),
       titleMedium: GoogleFonts.outfit(
         fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary, letterSpacing: 0.15,
@@ -146,7 +146,7 @@ abstract class AppTheme {
 
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.accent,
+          foregroundColor: AppColors.accentLight,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           textStyle: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w600),
         ),
@@ -196,7 +196,7 @@ abstract class AppTheme {
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.surfaceElevated,
         contentTextStyle: GoogleFonts.outfit(color: AppColors.textPrimary, fontSize: 14),
-        actionTextColor: AppColors.accent,
+        actionTextColor: AppColors.accentLight,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         behavior: SnackBarBehavior.floating,
         elevation: 6,
@@ -214,9 +214,30 @@ abstract class AppTheme {
         ),
       ),
 
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: AppColors.surface,
+        indicatorColor: AppColors.accent.withValues(alpha: 0.18),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return GoogleFonts.outfit(
+              fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.accentLight,
+            );
+          }
+          return GoogleFonts.outfit(
+            fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textMuted,
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(color: AppColors.accentLight, size: 24);
+          }
+          return const IconThemeData(color: AppColors.textMuted, size: 24);
+        }),
+      ),
+
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.surface,
-        selectedItemColor: AppColors.accent,
+        selectedItemColor: AppColors.accentLight,
         unselectedItemColor: AppColors.textMuted,
         elevation: 0,
         type: BottomNavigationBarType.fixed,

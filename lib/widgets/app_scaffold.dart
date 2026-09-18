@@ -49,58 +49,20 @@ class AppScaffold extends StatelessWidget {
                   : null,
               title: Row(
                 children: [
-                  Text(
-                    title!,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                      letterSpacing: -0.3,
+                  Flexible(
+                    child: Text(
+                      title!,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.3,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (userRole != null) ...[
-                    const SizedBox(width: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: userRole == UserRole.admin
-                            ? AppColors.adminBadge.withValues(alpha: 0.15)
-                            : userRole == UserRole.manager
-                                ? AppColors.managerBadge.withValues(alpha: 0.15)
-                                : userRole == UserRole.employee
-                                    ? AppColors.employeeBadge.withValues(alpha: 0.15)
-                                    : AppColors.studentBadge.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: userRole == UserRole.admin
-                              ? AppColors.adminBadge.withValues(alpha: 0.4)
-                              : userRole == UserRole.manager
-                                  ? AppColors.managerBadge.withValues(alpha: 0.4)
-                                  : userRole == UserRole.employee
-                                      ? AppColors.employeeBadge.withValues(alpha: 0.4)
-                                      : AppColors.studentBadge.withValues(alpha: 0.4),
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        userRole!.displayName.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: userRole == UserRole.admin
-                              ? AppColors.adminBadge
-                              : userRole == UserRole.manager
-                                  ? AppColors.managerBadge
-                                  : userRole == UserRole.employee
-                                      ? AppColors.employeeBadge
-                                      : AppColors.studentBadge,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
+               ],
               ),
               actions: actions,
             )

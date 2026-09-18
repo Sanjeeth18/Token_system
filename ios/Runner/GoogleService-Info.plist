@@ -11,9 +11,9 @@
 	<key>BUNDLE_ID</key>
 	<string>com.example.tokenSystem</string>
 	<key>PROJECT_ID</key>
-	<string>token-8ecb5</string>
+	<string>mess-tokens</string>
 	<key>STORAGE_BUCKET</key>
-	<string>token-8ecb5.appspot.com</string>
+	<string>mess-tokens.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>

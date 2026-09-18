@@ -7,9 +7,28 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:635820804420:android:96a8556e8968312cb22f11",
+        "mobilesdk_app_id": "1:635820804420:android:503cce87212fcb0eb22f11",
         "android_client_info": {
           "package_name": "com.mess.tokens"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFWl3mo_IPRZ4dk3lbABZovK4yju-4978"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:635820804420:android:96a8556e8968312cb22f11",
+        "android_client_info": {
+          "package_name": "com.psg.mess.tokens"
         }
       },
       "oauth_client": [],

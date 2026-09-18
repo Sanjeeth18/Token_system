@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../core/error/app_exception.dart';
 import '../../core/theme/app_colors.dart';
+import '../../models/token_model.dart';
 import '../../repositories/firestore_repository.dart';
 
 class ScannerScreen extends StatefulWidget {
-  const ScannerScreen({super.key});
+  final String? studentRollNumber;
+
+  const ScannerScreen({
+    super.key,
+    this.studentRollNumber,
+  });
 
   @override
   State<ScannerScreen> createState() => _ScannerScreenState();
@@ -39,14 +45,43 @@ class _ScannerScreenState extends State<ScannerScreen> {
       _isProcessing = true;
     });
 
+    final code = rawValue.trim();
+
+    // Student scanning counter QR code to purchase token
+    if (widget.studentRollNumber != null) {
+      final roll = widget.studentRollNumber!;
+      if (code == 'PURCHASE_VEG_TOKEN' || code == 'PURCHASE_NONVEG_TOKEN') {
+        final isVeg = code == 'PURCHASE_VEG_TOKEN';
+        final selection = TokenSelection(wantsVeg: isVeg, wantsNonVeg: !isVeg, eggCount: 0);
+
+        try {
+          await FirestoreRepository.instance.purchaseTokens(roll, selection);
+          if (!mounted) return;
+          _showResultDialog(
+            isSuccess: true,
+            title: 'Token Purchased!',
+            message: 'Successfully purchased 1 ${isVeg ? "Veg" : "Non-Veg"} Meal Token via QR Scan.',
+          );
+        } catch (e) {
+          if (!mounted) return;
+          _showResultDialog(
+            isSuccess: false,
+            title: 'Purchase Failed',
+            message: e.toString().replaceAll('AppException: ', '').replaceAll('Exception: ', ''),
+          );
+        }
+        return;
+      }
+    }
+
     try {
       final updatedTokens =
-          await FirestoreRepository.instance.redeemToken(rawValue.trim());
+          await FirestoreRepository.instance.redeemToken(code);
       if (!mounted) return;
       _showResultDialog(
         isSuccess: true,
         title: 'Token Redeemed!',
-        message: 'Successfully redeemed:\n$rawValue\n\nRemaining: '
+        message: 'Successfully redeemed:\n$code\n\nRemaining: '
             'Veg: ${updatedTokens.veg}, Non-Veg: ${updatedTokens.nonVeg}, Eggs: ${updatedTokens.eggs}',
       );
     } on TokenException catch (e) {

@@ -13,6 +13,9 @@ import '../../widgets/error_dialog.dart';
 import '../../widgets/loading_overlay.dart';
 import '../../widgets/token_card.dart';
 import 'token_wallet_screen.dart';
+import '../employee/scanner_screen.dart';
+
+import '../profile/profile_screen.dart';
 
 class StudentHomeScreen extends ConsumerStatefulWidget {
   final UserSession session;
@@ -88,6 +91,8 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
     final selection = ref.watch(tokenSelectionProvider);
     final countsAsync = ref.watch(tokenCountsProvider);
     final studentTokensAsync = ref.watch(studentTokensProvider(widget.session.id));
+    final currentAuth = ref.watch(authProvider);
+    final user = currentAuth is AuthAuthenticated ? currentAuth.session : widget.session;
 
     return LoadingOverlay(
       isLoading: actionState.isLoading,
@@ -96,6 +101,18 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
         title: 'Mess Portal',
         userRole: UserRole.student,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.person_rounded, color: AppColors.accent),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ProfileScreen(session: user),
+                ),
+              );
+            },
+            tooltip: 'Profile',
+          ),
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: AppColors.textMuted),
             tooltip: 'Sign Out',
@@ -123,17 +140,21 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
             : ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  // Greeting & Roll Number banner
+                  // Hero Profile Banner Container
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
                       gradient: AppColors.accentGradient,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        width: 1.5,
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.accent.withValues(alpha: 0.3),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
+                          color: AppColors.accent.withValues(alpha: 0.35),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
                         ),
                       ],
                     ),
@@ -143,65 +164,219 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Hello, ${widget.session.name}',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                                  child: Text(
+                                    widget.session.name.isNotEmpty
+                                        ? widget.session.name[0].toUpperCase()
+                                        : 'S',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Welcome, ${widget.session.name}',
+                                      style: const TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    const Text(
+                                      'Student Portal',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.white70,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
+                                  horizontal: 10, vertical: 5),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(8),
+                                color: Colors.black.withValues(alpha: 0.25),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
                               ),
                               child: Text(
                                 widget.session.id,
                                 style: const TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w800,
                                   color: Colors.white,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            const Icon(Icons.event_available_rounded,
-                                size: 16, color: Colors.white70),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Next Meal: ${MealDateUtils.formatDate(_nextMealDate)}',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Colors.white70,
-                                fontWeight: FontWeight.w500,
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.event_available_rounded,
+                                  size: 16, color: AppColors.studentBadge),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Next Dining Session: ${MealDateUtils.formatDate(_nextMealDate)}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Dual Quick Action Cards Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ScannerScreen(studentRollNumber: widget.session.id),
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(18),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.accent.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(Icons.qr_code_scanner_rounded, color: AppColors.accentLight, size: 24),
+                                ),
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'Scan Counter QR',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Instant meal booking',
+                                  style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => setState(() => _currentTabIndex = 1),
+                          borderRadius: BorderRadius.circular(18),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: AppColors.vegGreen.withValues(alpha: 0.3)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.vegGreen.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(Icons.account_balance_wallet_rounded, color: AppColors.vegGreen, size: 24),
+                                ),
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'My Active Tokens',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Show active pass QR',
+                                  style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 24),
 
                   // Section Title
                   const Text(
-                    'Select Meal Tokens',
+                    'Meal Booking Menu',
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   const Text(
-                    'Choose your meal preference for the upcoming dining schedule.',
+                    'Select your meal choices for the upcoming hostel dining session.',
                     style: TextStyle(
                       fontSize: 13,
                       color: AppColors.textSecondary,
@@ -212,13 +387,20 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                   countsAsync.when(
                     loading: () => const Center(
                       child: Padding(
-                        padding: EdgeInsets.all(20),
+                        padding: EdgeInsets.all(30),
                         child: CircularProgressIndicator(color: AppColors.accent),
                       ),
                     ),
-                    error: (err, _) => Text(
-                      'Failed to load token availability: $err',
-                      style: const TextStyle(color: AppColors.error),
+                    error: (err, _) => Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'Failed to load token availability: $err',
+                        style: const TextStyle(color: AppColors.error),
+                      ),
                     ),
                     data: (counts) {
                       final hasVegAlready =
@@ -239,7 +421,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                             title: 'Vegetarian Meal',
                             subtitle: hasVegAlready
                                 ? 'Already active in wallet'
-                                : 'Available tokens: ${counts.veg}',
+                                : 'Available pool: ${counts.veg} tokens',
                             icon: Icons.eco_rounded,
                             iconColor: AppColors.vegGreen,
                             badgeColor: AppColors.vegGreen,
@@ -258,7 +440,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                 ? 'Not served on this schedule'
                                 : hasNonVegAlready
                                     ? 'Already active in wallet'
-                                    : 'Available tokens: ${counts.nonVeg}',
+                                    : 'Available pool: ${counts.nonVeg} tokens',
                             icon: Icons.restaurant_rounded,
                             iconColor: AppColors.nonVegRed,
                             badgeColor: AppColors.nonVegRed,
@@ -278,41 +460,80 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                               color: selection.eggCount > 0
                                   ? AppColors.surfaceElevated
                                   : AppColors.surface,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(18),
                               border: Border.all(
                                 color: selection.eggCount > 0
-                                    ? AppColors.eggOrange
+                                    ? AppColors.eggYellow
                                     : AppColors.cardBorder,
                                 width: selection.eggCount > 0 ? 1.8 : 1,
                               ),
+                              boxShadow: selection.eggCount > 0
+                                  ? [
+                                      BoxShadow(
+                                        color: AppColors.eggYellow.withValues(alpha: 0.25),
+                                        blurRadius: 14,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ]
+                                  : [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.2),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
                             ),
                             child: Row(
                               children: [
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: AppColors.eggOrange.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(12),
+                                    color: AppColors.eggYellow.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: AppColors.eggYellow.withValues(alpha: 0.3),
+                                      width: 1,
+                                    ),
                                   ),
                                   child: const Icon(Icons.egg_rounded,
-                                      color: AppColors.eggOrange, size: 28),
+                                      color: AppColors.eggYellow, size: 28),
                                 ),
                                 const SizedBox(width: 16),
-                                const Expanded(
+                                Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        'Egg Tokens',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.textPrimary,
-                                        ),
+                                      Row(
+                                        children: [
+                                          const Text(
+                                            'Egg Tokens',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.textPrimary,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.eggYellow.withValues(alpha: 0.15),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: const Text(
+                                              '15/BATCH',
+                                              style: TextStyle(
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w800,
+                                                color: AppColors.eggYellow,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        'Add in batches of 15',
+                                      const SizedBox(height: 4),
+                                      const Text(
+                                        'Add in batches of 15 eggs',
                                         style: TextStyle(
                                           fontSize: 13,
                                           color: AppColors.textSecondary,
@@ -333,7 +554,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                         Icons.remove_circle_outline_rounded,
                                         size: 26,
                                       ),
-                                      color: AppColors.eggOrange,
+                                      color: AppColors.eggYellow,
                                     ),
                                     Text(
                                       '${selection.eggCount}',
@@ -351,7 +572,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                         Icons.add_circle_outline_rounded,
                                         size: 26,
                                       ),
-                                      color: AppColors.eggOrange,
+                                      color: AppColors.eggYellow,
                                     ),
                                   ],
                                 ),
@@ -363,7 +584,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                     },
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
 
                   // Confirm & Book Button
                   AppPrimaryButton(

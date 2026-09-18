@@ -7,11 +7,13 @@ import '../../providers/auth_provider.dart';
 import '../../providers/token_provider.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_scaffold.dart';
-import '../../widgets/app_text_field.dart';
 import '../../widgets/error_dialog.dart';
 import '../../widgets/token_card.dart';
 import '../manager/create_user_screen.dart';
 import '../manager/delete_user_screen.dart';
+
+import '../profile/profile_screen.dart';
+import 'view_members_screen.dart';
 
 class AdminScreen extends ConsumerStatefulWidget {
   final UserSession session;
@@ -26,10 +28,6 @@ class AdminScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminScreenState extends ConsumerState<AdminScreen> {
-  final _vegCountController = TextEditingController();
-  final _nonVegCountController = TextEditingController();
-  bool _isUpdating = false;
-
   @override
   void initState() {
     super.initState();
@@ -38,18 +36,12 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
     });
   }
 
-  @override
-  void dispose() {
-    _vegCountController.dispose();
-    _nonVegCountController.dispose();
-    super.dispose();
-  }
-
   Future<void> _handleLogout() async {
     final confirmed = await AppFeedback.showConfirmationDialog(
       context,
       title: 'Sign Out',
-      message: 'Are you sure you want to sign out from the Admin master console?',
+      message:
+          'Are you sure you want to sign out from the Admin master console?',
       confirmLabel: 'Sign Out',
       isDestructive: true,
     );
@@ -60,40 +52,41 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
     }
   }
 
-  Future<void> _updateCount(String type, TextEditingController controller) async {
-    final count = int.tryParse(controller.text.trim());
-    if (count == null || count < 0) {
-      AppFeedback.showSnackBar(context, 'Please enter a valid non-negative number', isError: true);
-      return;
-    }
-
-    setState(() => _isUpdating = true);
-    try {
-      await ref.read(tokenCountsProvider.notifier).setCount(type, count);
-      controller.clear();
-      if (!mounted) return;
-      AppFeedback.showSnackBar(
-        context,
-        '${type == 'veg' ? 'Veg' : 'Non-Veg'} token pool updated to $count',
-        isError: false,
-      );
-    } catch (e) {
-      if (mounted) {
-        AppFeedback.showSnackBar(context, 'Failed to update tokens: $e', isError: true);
-      }
-    } finally {
-      if (mounted) setState(() => _isUpdating = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final countsAsync = ref.watch(tokenCountsProvider);
+    final currentAuth = ref.watch(authProvider);
+    final user =
+        currentAuth is AuthAuthenticated ? currentAuth.session : widget.session;
 
     return AppScaffold(
-      title: 'Admin Master Console',
-      userRole: widget.session.role,
+      title: 'Admin Console',
+      userRole: user.role,
       actions: [
+        IconButton(
+          icon: const Icon(Icons.people_rounded, color: AppColors.accentLight),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ViewMembersScreen(currentUser: user),
+              ),
+            );
+          },
+          tooltip: 'View Members',
+        ),
+        IconButton(
+          icon: const Icon(Icons.person_rounded, color: AppColors.accent),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ProfileScreen(session: user),
+              ),
+            );
+          },
+          tooltip: 'Profile',
+        ),
         IconButton(
           icon: const Icon(Icons.refresh_rounded, color: AppColors.accent),
           onPressed: () => ref.read(tokenCountsProvider.notifier).refresh(),
@@ -116,15 +109,19 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2D1B4E), Color(0xFF161026)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                gradient: AppColors.adminGradient,
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(
-                  color: AppColors.adminBadge.withValues(alpha: 0.4),
+                  color: AppColors.adminBadge.withValues(alpha: 0.5),
+                  width: 1.5,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.adminBadge.withValues(alpha: 0.25),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -157,7 +154,8 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: AppColors.adminBadge.withValues(alpha: 0.2),
+                                color:
+                                    AppColors.adminBadge.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: const Text(
@@ -255,150 +253,55 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
             ),
             const SizedBox(height: 28),
 
-            // Quota Adjustment
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: AppColors.cardBorder),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Override Token Pool Quotas',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppTextField(
-                          label: 'Veg Quota',
-                          hint: 'e.g. 150',
-                          controller: _vegCountController,
-                          keyboardType: TextInputType.number,
-                          prefixIcon: Icons.eco_rounded,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 24),
-                        child: SizedBox(
-                          height: 48,
-                          child: ElevatedButton(
-                            onPressed: _isUpdating
-                                ? null
-                                : () => _updateCount('veg', _vegCountController),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.vegGreen,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text('Set Veg'),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppTextField(
-                          label: 'Non-Veg Quota',
-                          hint: 'e.g. 100',
-                          controller: _nonVegCountController,
-                          keyboardType: TextInputType.number,
-                          prefixIcon: Icons.restaurant_rounded,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 24),
-                        child: SizedBox(
-                          height: 48,
-                          child: ElevatedButton(
-                            onPressed: _isUpdating
-                                ? null
-                                : () => _updateCount('non-veg', _nonVegCountController),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.nonVegRed,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text('Set Non-Veg'),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 28),
-
             // Elevated User Management
             const Text(
-              'Master User Management',
+              'Manage System Accounts',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
-            const SizedBox(height: 6),
-            const Text(
-              'As an Admin, you can create and remove Managers, Staff, and Students.',
-              style: TextStyle(
-                fontSize: 13,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 14),
 
-            Row(
-              children: [
-                Expanded(
-                  child: AppPrimaryButton(
-                    label: 'Create Account',
-                    icon: Icons.person_add_rounded,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CreateUserScreen(currentUser: widget.session),
-                        ),
-                      );
-                    },
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: AppOutlineButton(
+                      label: 'Create',
+                      icon: Icons.person_add_rounded,
+                      color: AppColors.accentLight,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                CreateUserScreen(currentUser: widget.session),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: AppOutlineButton(
-                    label: 'Delete Account',
-                    icon: Icons.person_remove_rounded,
-                    color: AppColors.error,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => DeleteUserScreen(currentUser: widget.session),
-                        ),
-                      );
-                    },
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AppOutlineButton(
+                      label: 'Delete',
+                      icon: Icons.person_remove_rounded,
+                      color: AppColors.error,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                DeleteUserScreen(currentUser: widget.session),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 24),
           ],

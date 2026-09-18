@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 /// Token count statistics for the manager/admin dashboard.
 class TokenCounts {
   final int nonVeg;
@@ -114,3 +116,43 @@ class TokenSelection {
   /// Convert to the legacy [List<int>] format: [nonVeg, veg, eggs].
   List<int> toList() => [wantsNonVeg ? 1 : 0, wantsVeg ? 1 : 0, eggCount];
 }
+
+/// Record of a token purchase transaction.
+class TokenTransactionModel {
+  final String id;
+  final String rollNumber;
+  final String category;
+  final int count;
+  final String date;
+  final String time;
+  final DateTime timestamp;
+
+  const TokenTransactionModel({
+    required this.id,
+    required this.rollNumber,
+    required this.category,
+    required this.count,
+    required this.date,
+    required this.time,
+    required this.timestamp,
+  });
+
+  factory TokenTransactionModel.fromFirestore(dynamic doc) {
+    final data = (doc.data() as Map<String, dynamic>?) ?? {};
+    final ts = data['timestamp'];
+    DateTime parsedTime = DateTime.now();
+    if (ts is Timestamp) {
+      parsedTime = ts.toDate();
+    }
+    return TokenTransactionModel(
+      id: doc.id as String,
+      rollNumber: data['rollNumber'] as String? ?? '',
+      category: data['category'] as String? ?? 'veg',
+      count: (data['count'] as num?)?.toInt() ?? 1,
+      date: data['date'] as String? ?? '',
+      time: data['time'] as String? ?? '',
+      timestamp: parsedTime,
+    );
+  }
+}
+
