@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
@@ -20,6 +21,110 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   UserRole? _detectedRole;
+
+  Future<void> _showForgotPasswordDialog(BuildContext context) async {
+    final emailController = TextEditingController(
+      text: _usernameController.text.contains('@')
+          ? _usernameController.text.trim()
+          : '',
+    );
+    final formKey = GlobalKey<FormState>();
+
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: AppColors.surfaceElevated,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.mark_email_read_rounded,
+                  color: AppColors.accentLight, size: 24),
+              SizedBox(width: 10),
+              Text('Reset Password',
+                  style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18)),
+            ],
+          ),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Enter your email address to receive a secure password reset link.',
+                  style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                      height: 1.4),
+                ),
+                const SizedBox(height: 16),
+                AppTextField(
+                  label: 'Email Address',
+                  hint: 'e.g. user@domain.com',
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  prefixIcon: Icons.email_outlined,
+                  validator: (val) {
+                    if (val == null ||
+                        val.trim().isEmpty ||
+                        !val.contains('@')) {
+                      return 'Please enter a valid email address';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel',
+                  style: TextStyle(color: AppColors.textMuted)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (!formKey.currentState!.validate()) return;
+                final email = emailController.text.trim();
+                try {
+                  await FirebaseAuth.instance
+                      .sendPasswordResetEmail(email: email);
+                  if (ctx.mounted) {
+                    Navigator.pop(ctx);
+                    AppFeedback.showSnackBar(
+                      context,
+                      'Password reset link sent to $email',
+                      isError: false,
+                    );
+                  }
+                } catch (e) {
+                  if (ctx.mounted) {
+                    AppFeedback.showSnackBar(
+                      ctx,
+                      'Failed to send reset email: $e',
+                      isError: true,
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('Send Link'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -91,69 +196,96 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: Form(
                 key: _formKey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Brand Icon & Header
+                    // Brand Identity Hero Section
                     Center(
                       child: Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(22),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: AppColors.accentGradient,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            width: 2,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.accent.withValues(alpha: 0.35),
-                              blurRadius: 24,
-                              offset: const Offset(0, 8),
+                              color: AppColors.accent.withValues(alpha: 0.45),
+                              blurRadius: 30,
+                              offset: const Offset(0, 10),
                             ),
                           ],
                         ),
                         child: const Icon(
                           Icons.restaurant_menu_rounded,
-                          size: 48,
+                          size: 52,
                           color: Colors.white,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                     const Text(
-                      'PSG Mess Token',
+                      'PSG MESS TOKEN',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w900,
                         color: AppColors.textPrimary,
-                        letterSpacing: -0.5,
+                        letterSpacing: 1.2,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Hostel Dining Portal',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
-                      ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: AppColors.vegGreen,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Digital Hostel Token System',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 36),
+                    const SizedBox(height: 32),
 
-                    // Login Card
+                    const SizedBox(height: 16),
+
+                    // Login Container Card
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
                         color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.cardBorder),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: _detectedRole != null
+                              ? _getRoleColor(_detectedRole!)
+                                  .withValues(alpha: 0.4)
+                              : AppColors.cardBorder,
+                          width: _detectedRole != null ? 1.5 : 1.0,
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            blurRadius: 20,
+                            color: Colors.black.withValues(alpha: 0.35),
+                            blurRadius: 24,
                             offset: const Offset(0, 10),
                           ),
                         ],
@@ -164,49 +296,44 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'Sign In',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              if (_detectedRole != null)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.accent.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: AppColors.accent.withValues(alpha: 0.4),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Sign In',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.textPrimary,
                                     ),
                                   ),
-                                  child: Text(
-                                    _detectedRole!.displayName.toUpperCase(),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    _detectedRole != null
+                                        ? 'Accessing ${_detectedRole!.displayName} Portal'
+                                        : 'Enter your credentials to continue',
                                     style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.accentLight,
-                                      letterSpacing: 0.5,
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
                                     ),
                                   ),
-                                ),
+                                ],
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
 
-                          // Username Field
+                          // Email Field
                           AppTextField(
-                            label: 'Username / Roll No.',
-                            hint: 'e.g. 23XX01, E101, M01, A01',
+                            label: 'Email',
+                            hint: 'e.g. user@domain.com ',
                             controller: _usernameController,
                             prefixIcon: Icons.person_outline_rounded,
-                            textCapitalization: TextCapitalization.characters,
+                            keyboardType: TextInputType.emailAddress,
+                            textCapitalization: TextCapitalization.none,
                             validator: (val) {
                               if (val == null || val.trim().isEmpty) {
-                                return 'Please enter your username';
+                                return 'Please enter your email';
                               }
                               return null;
                             },
@@ -216,7 +343,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           // Password Field
                           AppTextField(
                             label: 'Password',
-                            hint: 'Enter your password',
+                            hint: 'Enter your account password',
                             controller: _passwordController,
                             isPassword: true,
                             prefixIcon: Icons.lock_outline_rounded,
@@ -227,13 +354,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               return null;
                             },
                           ),
-                          const SizedBox(height: 26),
+                          const SizedBox(height: 8),
+
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () =>
+                                  _showForgotPasswordDialog(context),
+                              style: TextButton.styleFrom(
+                                visualDensity: VisualDensity.compact,
+                                padding: EdgeInsets.zero,
+                              ),
+                              child: const Text(
+                                'Forgot Password?',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.accentLight,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
 
                           // Submit Button
                           AppPrimaryButton(
-                            label: 'Sign In',
+                            label: 'Sign In to Portal',
                             isLoading: isLoading,
-                            icon: Icons.login_rounded,
+                            icon: Icons.arrow_forward_rounded,
                             onPressed: _handleLogin,
                           ),
                         ],
@@ -241,15 +389,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
 
                     const SizedBox(height: 24),
-                    const Center(
-                      child: Text(
-                        'Prefix Guide: 2xxx (Student) • Exxx (Staff) • Mxxx (Manager) • Axxx (Admin)',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textMuted,
-                          height: 1.4,
-                        ),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceElevated.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: AppColors.cardBorder.withValues(alpha: 0.5)),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.shield_outlined,
+                              size: 16, color: AppColors.textMuted),
+                          SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              'Secured Auth •  Email',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textMuted,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -260,5 +425,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
       ),
     );
+  }
+
+
+
+  Color _getRoleColor(UserRole role) {
+    return switch (role) {
+      UserRole.admin => AppColors.adminBadge,
+      UserRole.manager => AppColors.managerBadge,
+      UserRole.employee => AppColors.employeeBadge,
+      UserRole.student => AppColors.studentBadge,
+    };
   }
 }

@@ -28,7 +28,7 @@ class AppPrimaryButton extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: onPressed == null
               ? const LinearGradient(
-                  colors: [Color(0xFF2A3A50), Color(0xFF1C2537)])
+                  colors: [Color(0xFF1F2C42), Color(0xFF161F30)])
               : AppColors.accentGradient,
           borderRadius: BorderRadius.circular(14),
           boxShadow: onPressed == null
@@ -46,8 +46,8 @@ class AppPrimaryButton extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           ),
           child: isLoading
               ? const SizedBox(
@@ -65,13 +65,16 @@ class AppPrimaryButton extends StatelessWidget {
                       Icon(icon, size: 18, color: Colors.white),
                       const SizedBox(width: 8),
                     ],
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.3,
+                    Flexible(
+                      child: Text(
+                        label,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ),
                   ],
@@ -120,8 +123,8 @@ class AppDangerButton extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           ),
           child: isLoading
               ? const SizedBox(
@@ -136,12 +139,17 @@ class AppDangerButton extends StatelessWidget {
                       Icon(icon, size: 18, color: Colors.white),
                       const SizedBox(width: 8),
                     ],
-                    Text(label,
+                    Flexible(
+                      child: Text(
+                        label,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                        )),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
         ),
@@ -177,7 +185,8 @@ class AppOutlineButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: c,
           side: BorderSide(color: c, width: 1.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -186,9 +195,16 @@ class AppOutlineButton extends StatelessWidget {
               Icon(icon, size: 18, color: c),
               const SizedBox(width: 8),
             ],
-            Text(label,
+            Flexible(
+              child: Text(
+                label,
                 style: TextStyle(
-                    color: c, fontSize: 16, fontWeight: FontWeight.w600)),
+                    color: c,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    overflow: TextOverflow.ellipsis),
+              ),
+            ),
           ],
         ),
       ),

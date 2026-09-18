@@ -52,12 +52,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBFWl3mo_IPRZ4dk3lbABZovK4yju-4978',
-    appId: '1:635820804420:android:96a8556e8968312cb22f11',
+    appId: '1:635820804420:android:503cce87212fcb0eb22f11',
     messagingSenderId: '635820804420',
     projectId: 'mess-tokens',
     storageBucket: 'mess-tokens.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAkp_AwJZEF0pqE9ULIdXNZ8qXJ3blmaKU',
     appId: '1:635820804420:ios:faf6fa5894441cc6b22f11',
@@ -66,7 +65,6 @@ class DefaultFirebaseOptions {
     storageBucket: 'mess-tokens.firebasestorage.app',
     iosBundleId: 'com.example.tokenSystem',
   );
-
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyAkp_AwJZEF0pqE9ULIdXNZ8qXJ3blmaKU',
     appId: '1:635820804420:ios:faf6fa5894441cc6b22f11',

@@ -13,6 +13,8 @@ import '../../widgets/token_card.dart';
 import 'create_user_screen.dart';
 import 'delete_user_screen.dart';
 
+import '../profile/profile_screen.dart';
+
 class ManagerScreen extends ConsumerStatefulWidget {
   final UserSession session;
 
@@ -28,7 +30,8 @@ class ManagerScreen extends ConsumerStatefulWidget {
 class _ManagerScreenState extends ConsumerState<ManagerScreen> {
   final _vegCountController = TextEditingController();
   final _nonVegCountController = TextEditingController();
-  bool _isUpdating = false;
+  bool _isUpdatingVeg = false;
+  bool _isUpdatingNonVeg = false;
 
   @override
   void initState() {
@@ -67,14 +70,22 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
       return;
     }
 
-    setState(() => _isUpdating = true);
+    final isVeg = type == 'veg';
+    setState(() {
+      if (isVeg) {
+        _isUpdatingVeg = true;
+      } else {
+        _isUpdatingNonVeg = true;
+      }
+    });
+
     try {
       await ref.read(tokenCountsProvider.notifier).setCount(type, count);
       controller.clear();
       if (!mounted) return;
       AppFeedback.showSnackBar(
         context,
-        '${type == 'veg' ? 'Veg' : 'Non-Veg'} token pool updated to $count',
+        '${isVeg ? 'Veg' : 'Non-Veg'} token pool updated to $count',
         isError: false,
       );
     } catch (e) {
@@ -82,18 +93,40 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
         AppFeedback.showSnackBar(context, 'Failed to update tokens: $e', isError: true);
       }
     } finally {
-      if (mounted) setState(() => _isUpdating = false);
+      if (mounted) {
+        setState(() {
+          if (isVeg) {
+            _isUpdatingVeg = false;
+          } else {
+            _isUpdatingNonVeg = false;
+          }
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final countsAsync = ref.watch(tokenCountsProvider);
+    final currentAuth = ref.watch(authProvider);
+    final user = currentAuth is AuthAuthenticated ? currentAuth.session : widget.session;
 
     return AppScaffold(
       title: 'Manager Console',
-      userRole: widget.session.role,
+      userRole: user.role,
       actions: [
+        IconButton(
+          icon: const Icon(Icons.person_rounded, color: AppColors.accent),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ProfileScreen(session: user),
+              ),
+            );
+          },
+          tooltip: 'Profile',
+        ),
         IconButton(
           icon: const Icon(Icons.refresh_rounded, color: AppColors.accent),
           onPressed: () => ref.read(tokenCountsProvider.notifier).refresh(),
@@ -118,7 +151,14 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
               decoration: BoxDecoration(
                 gradient: AppColors.cardGradient,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: AppColors.cardBorder),
+                border: Border.all(color: AppColors.managerBadge.withValues(alpha: 0.4)),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.managerBadge.withValues(alpha: 0.15),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -275,17 +315,27 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
                         child: SizedBox(
                           height: 48,
                           child: ElevatedButton(
-                            onPressed: _isUpdating
+                            onPressed: _isUpdatingVeg
                                 ? null
                                 : () => _updateCount('veg', _vegCountController),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.vegGreen,
+                              disabledBackgroundColor: AppColors.vegGreen.withValues(alpha: 0.8),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text('Set Veg'),
+                            child: _isUpdatingVeg
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text('Set Veg'),
                           ),
                         ),
                       ),
@@ -311,17 +361,27 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
                         child: SizedBox(
                           height: 48,
                           child: ElevatedButton(
-                            onPressed: _isUpdating
+                            onPressed: _isUpdatingNonVeg
                                 ? null
                                 : () => _updateCount('non-veg', _nonVegCountController),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.nonVegRed,
+                              disabledBackgroundColor: AppColors.nonVegRed.withValues(alpha: 0.8),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text('Set Non-Veg'),
+                            child: _isUpdatingNonVeg
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text('Set Non-Veg'),
                           ),
                         ),
                       ),

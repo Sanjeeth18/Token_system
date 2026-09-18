@@ -1,10 +1,12 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
 import 'models/user_model.dart';
+import 'providers/auth_provider.dart';
 import 'screens/admin/admin_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/employee/employee_screen.dart';
@@ -16,6 +18,13 @@ import 'screens/student/student_home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables securely from .env
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (e) {
+    debugPrint('dotenv load note: $e');
+  }
 
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
@@ -42,16 +51,37 @@ void main() async {
   );
 }
 
-class PsgTokenApp extends StatelessWidget {
+class PsgTokenApp extends ConsumerWidget {
   const PsgTokenApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+
+    Widget homeWidget = const LoginScreen();
+    if (authState is AuthAuthenticated) {
+      final session = authState.session;
+      switch (session.role) {
+        case UserRole.admin:
+          homeWidget = AdminScreen(session: session);
+          break;
+        case UserRole.manager:
+          homeWidget = ManagerScreen(session: session);
+          break;
+        case UserRole.employee:
+          homeWidget = EmployeeScreen(session: session);
+          break;
+        case UserRole.student:
+          homeWidget = StudentHomeScreen(session: session);
+          break;
+      }
+    }
+
     return MaterialApp(
       title: 'PSG Mess Token',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      initialRoute: AppConstants.routeLogin,
+      home: homeWidget,
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case AppConstants.routeLogin:

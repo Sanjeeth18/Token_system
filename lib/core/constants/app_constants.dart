@@ -7,18 +7,30 @@ abstract class AppConstants {
   // ─── Firestore Collections ───────────────────────────────────────────────────
   static const String colStudents = 'Students';
   static const String colEmployees = 'Employees';
-  static const String colManagers = 'Manager';
+  static const String colManagers = 'Managers';
   static const String colAdmins = 'Admins';
   static const String colTokens = 'Tokens';
   static const String docTokenCounts = 'Counts';
 
+  // ─── Default Credentials & Security ──────────────────────────────────────────
+  static const String defaultPassword = 'Password@1234';
+
+  // ─── Cloudinary Configuration ────────────────────────────────────────────────
+  static const String cloudinaryCloudName = 'dx47upqcg'; // Update with Cloudinary Cloud Name
+  static const String cloudinaryUploadPreset = 'mess_tokens_preset'; // Unsigned upload preset fallback
+  static const String cloudinaryApiKey = '758346946198635'; // Optional API Key for Signed Uploads
+  static const String cloudinaryApiSecret = 'l8gqVHPbEN0cIqvyJ6CQcqdnz98'; // Optional API Secret for Signed Uploads
+
   // ─── Firestore Field Names ───────────────────────────────────────────────────
-  static const String fieldPassword = 'Password';
   static const String fieldName = 'name';
   static const String fieldCourse = 'course';
-  static const String fieldDob = 'Date of Birth';
-  static const String fieldDoj = 'Date of Join';
-  static const String fieldCreatedAt = 'Date of created';
+  static const String fieldDepartment = 'department';
+  static const String fieldEmail = 'email';
+  static const String fieldPhotoUrl = 'photoUrl';
+  static const String fieldUid = 'uid';
+  static const String fieldDob = 'dob';
+  static const String fieldDoj = 'doj';
+  static const String fieldCreatedAt = 'createdAt';
   static const String fieldRole = 'role';
   static const String fieldVeg = 'veg';
   static const String fieldNonVeg = 'non-veg';
@@ -33,7 +45,7 @@ abstract class AppConstants {
   static const String roleStudent = 'student';
 
   // ─── Username Prefix Detection ───────────────────────────────────────────────
-  // Students: roll number starting with '2' (e.g., 23EE01)
+  // Students: roll number starting with '2' or 'M' or 'S'
   static const String prefixStudent = '2';
   // Employees: ID starting with 'e' or 'E'
   static const String prefixEmployee = 'e';
@@ -53,6 +65,8 @@ abstract class AppConstants {
   static const String routeCreateUser = '/manager/create';
   static const String routeDeleteUser = '/manager/delete';
   static const String routeAdminHome = '/admin/home';
+  static const String routeProfile = '/profile';
+  static const String routeEditProfile = '/profile/edit';
 
   // ─── QR Code Type Labels ─────────────────────────────────────────────────────
   static const String qrTypeVeg = 'Veg';
