@@ -17,7 +17,7 @@ class TokenSelectionCard extends StatelessWidget {
   const TokenSelectionCard({
     super.key,
     required this.title,
-    required this.subtitle,
+    this.subtitle = '',
     required this.icon,
     required this.iconColor,
     required this.badgeColor,
@@ -32,9 +32,7 @@ class TokenSelectionCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: isSelected
-            ? AppColors.surfaceElevated
-            : AppColors.surface,
+        color: isSelected ? AppColors.surfaceElevated : AppColors.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isSelected ? badgeColor : AppColors.cardBorder,
@@ -84,54 +82,43 @@ class TokenSelectionCard extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Text(
-                            title,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                          Expanded(
+                            child: Text(
+                              title,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (!isAvailable) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: AppColors.error.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: AppColors.error.withValues(alpha: 0.4)),
-                              ),
-                              child: const Text(
-                                'UNAVAILABLE',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.error,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
-                          ],
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
+                      if (subtitle.isNotEmpty)
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isAvailable
+                                ? AppColors.textSecondary
+                                : AppColors.error.withValues(alpha: 0.9),
+                            fontWeight: isAvailable
+                                ? FontWeight.normal
+                                : FontWeight.w500,
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
                 if (trailing != null)
                   trailing!
-                else
+                else if (isAvailable)
                   Switch(
                     value: isSelected,
-                    onChanged: isAvailable ? (_) => onToggle() : null,
+                    onChanged: (_) => onToggle(),
                     activeThumbColor: badgeColor,
                     activeTrackColor: badgeColor.withValues(alpha: 0.3),
                   ),
@@ -215,7 +202,9 @@ class TokenWalletCard extends StatelessWidget {
                   hasToken ? 'Active Pool: $count' : 'No active tokens',
                   style: TextStyle(
                     fontSize: 13,
-                    color: hasToken ? AppColors.textSecondary : AppColors.textMuted,
+                    color: hasToken
+                        ? AppColors.textSecondary
+                        : AppColors.textMuted,
                     fontWeight: hasToken ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
@@ -231,7 +220,8 @@ class TokenWalletCard extends StatelessWidget {
                 backgroundColor: color,
                 foregroundColor: Colors.white,
                 elevation: 2,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

@@ -11,7 +11,7 @@ void main() {
     );
 
     // Verify that the login screen renders
-    expect(find.text('PSG Mess Token'), findsOneWidget);
-    expect(find.text('Sign In'), findsWidgets);
+    expect(find.text('PSG MESS TOKEN'), findsOneWidget);
+    expect(find.text('Sign In to Portal'), findsOneWidget);
   });
 }
