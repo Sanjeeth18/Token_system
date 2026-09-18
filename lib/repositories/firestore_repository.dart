@@ -468,12 +468,18 @@ class FirestoreRepository {
   /// Fetches detailed transaction history for a student.
   Future<List<TokenTransactionModel>> getStudentTransactionHistory(String roll) async {
     try {
-      final snap = await _db
-          .collection(AppConstants.colPurchases)
-          .where('rollNumber', isEqualTo: roll)
-          .get();
+      final snap = await _db.collection(AppConstants.colPurchases).get();
+      final list = <TokenTransactionModel>[];
+      final targetRoll = roll.trim().toUpperCase();
 
-      final list = snap.docs.map((doc) => TokenTransactionModel.fromFirestore(doc)).toList();
+      for (final doc in snap.docs) {
+        final data = doc.data();
+        final docRoll = (data['rollNumber'] as String? ?? '').trim().toUpperCase();
+        if (docRoll == targetRoll) {
+          list.add(TokenTransactionModel.fromFirestore(doc));
+        }
+      }
+
       list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
       return list;
     } catch (e) {
@@ -510,19 +516,19 @@ class FirestoreRepository {
         if (type == 'veg') {
           if (current.veg <= 0) {
             throw const TokenException(TokenErrorType.alreadyUsed,
-                'Veg token not purchased or already used.');
+                'QR code already used.');
           }
           newVeg = (current.veg - count).clamp(0, current.veg);
         } else if (type == 'non-veg' || type == 'nonveg') {
           if (current.nonVeg <= 0) {
             throw const TokenException(TokenErrorType.alreadyUsed,
-                'Non-Veg token not purchased or already used.');
+                'QR code already used.');
           }
           newNonVeg = (current.nonVeg - count).clamp(0, current.nonVeg);
         } else if (type == 'eggs' || type == 'egg') {
           if (current.eggs <= 0) {
             throw const TokenException(TokenErrorType.alreadyUsed,
-                'Egg token not purchased or already used.');
+                'QR code already used.');
           }
           if (current.eggs < count) {
             throw TokenException(TokenErrorType.insufficientCount,

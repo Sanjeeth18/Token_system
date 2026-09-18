@@ -25,6 +25,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
   );
 
   bool _isProcessing = false;
+  final Set<String> _scannedQrs = {};
 
   @override
   void dispose() {
@@ -46,6 +47,16 @@ class _ScannerScreenState extends State<ScannerScreen> {
     });
 
     final code = rawValue.trim();
+
+    // Check if QR code was already scanned in this active session
+    if (_scannedQrs.contains(code)) {
+      _showResultDialog(
+        isSuccess: false,
+        title: 'QR Code Already Used',
+        message: 'QR code already used.',
+      );
+      return;
+    }
 
     // Student scanning counter QR code to purchase token
     if (widget.studentRollNumber != null) {
@@ -75,21 +86,21 @@ class _ScannerScreenState extends State<ScannerScreen> {
     }
 
     try {
-      final updatedTokens =
-          await FirestoreRepository.instance.redeemToken(code);
+      await FirestoreRepository.instance.redeemToken(code);
+      _scannedQrs.add(code);
       if (!mounted) return;
       _showResultDialog(
         isSuccess: true,
         title: 'Token Redeemed!',
-        message: 'Successfully redeemed:\n$code\n\nRemaining: '
-            'Veg: ${updatedTokens.veg}, Non-Veg: ${updatedTokens.nonVeg}, Eggs: ${updatedTokens.eggs}',
+        message: 'Successfully redeemed:\n$code',
       );
-    } on TokenException catch (e) {
+    } on TokenException {
+      _scannedQrs.add(code);
       if (!mounted) return;
       _showResultDialog(
         isSuccess: false,
-        title: 'Redemption Failed',
-        message: e.message,
+        title: 'QR Code Already Used',
+        message: 'QR code already used.',
       );
     } on UserNotFoundException catch (e) {
       if (!mounted) return;
