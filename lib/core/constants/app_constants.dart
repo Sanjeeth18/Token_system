@@ -1,10 +1,10 @@
 /// Application-wide constants: route names, Firestore collections, role prefixes.
 abstract class AppConstants {
-  // ─── App Info ────────────────────────────────────────────────────────────────
+  // App Info
   static const String appName = 'PSG Mess Token';
   static const String appVersion = '2.0.0';
 
-  // ─── Firestore Collections ───────────────────────────────────────────────────
+  // Firestore Collections
   static const String colStudents = 'Students';
   static const String colEmployees = 'Employees';
   static const String colManagers = 'Managers';
@@ -13,16 +13,16 @@ abstract class AppConstants {
   static const String colPurchases = 'Purchases';
   static const String docTokenCounts = 'Counts';
 
-  // ─── Default Credentials & Security ──────────────────────────────────────────
+  // Default Credentials & Security
   static const String defaultPassword = 'Password@1234';
 
-  // ─── Cloudinary Configuration ────────────────────────────────────────────────
-  static const String cloudinaryCloudName = 'dx47upqcg'; // Update with Cloudinary Cloud Name
-  static const String cloudinaryUploadPreset = 'mess_tokens_preset'; // Unsigned upload preset fallback
-  static const String cloudinaryApiKey = '758346946198635'; // Optional API Key for Signed Uploads
-  static const String cloudinaryApiSecret = 'l8gqVHPbEN0cIqvyJ6CQcqdnz98'; // Optional API Secret for Signed Uploads
+  // Cloudinary Configuration
+  static const String cloudinaryCloudName = 'dx47upqcg';
+  static const String cloudinaryUploadPreset = 'mess_tokens_preset';
+  static const String cloudinaryApiKey = '758346946198635';
+  static const String cloudinaryApiSecret = 'l8gqVHPbEN0cIqvyJ6CQcqdnz98';
 
-  // ─── Firestore Field Names ───────────────────────────────────────────────────
+  // Firestore Field Names
   static const String fieldName = 'name';
   static const String fieldCourse = 'course';
   static const String fieldDepartment = 'department';
@@ -39,23 +39,19 @@ abstract class AppConstants {
   static const String fieldVegPurchased = 'veg_purchased';
   static const String fieldNonVegPurchased = 'non-veg_purchased';
 
-  // ─── Role Identifiers (stored in Firestore) ──────────────────────────────────
+  // Role Identifiers (stored in Firestore)
   static const String roleAdmin = 'admin';
   static const String roleManager = 'manager';
   static const String roleEmployee = 'employee';
   static const String roleStudent = 'student';
 
-  // ─── Username Prefix Detection ───────────────────────────────────────────────
-  // Students: roll number starting with '2' or 'M' or 'S'
+  // Username Prefix Detection
   static const String prefixStudent = '2';
-  // Employees: ID starting with 'e' or 'E'
   static const String prefixEmployee = 'e';
-  // Managers: ID starting with 'm' or 'M'
   static const String prefixManager = 'm';
-  // Admins: ID starting with 'a' or 'A'
   static const String prefixAdmin = 'a';
 
-  // ─── Route Names ─────────────────────────────────────────────────────────────
+  // Route Names
   static const String routeLogin = '/';
   static const String routeStudentHome = '/student/home';
   static const String routeTokenWallet = '/student/wallet';
@@ -69,18 +65,18 @@ abstract class AppConstants {
   static const String routeProfile = '/profile';
   static const String routeEditProfile = '/profile/edit';
 
-  // ─── QR Code Type Labels ─────────────────────────────────────────────────────
+  // QR Code Type Labels
   static const String qrTypeVeg = 'Veg';
   static const String qrTypeNonVeg = 'Non-Veg';
   static const String qrTypeEggs = 'Eggs';
 
-  // ─── Validation ──────────────────────────────────────────────────────────────
+  // Validation
   static const int studentRollLength = 6;
   static const int minPasswordLength = 10;
   static const String passwordPattern =
       r'^(?=.*[!@#$%^&*(),.?":{}|<>])(?=.*\d)[A-Za-z\d!@#$%^&*(),.?":{}|<>]{10,}$';
 
-  // ─── Courses ─────────────────────────────────────────────────────────────────
+  // Courses
   static const List<String> courses = [
     'Automobile Engineering',
     'Biomedical Engineering',

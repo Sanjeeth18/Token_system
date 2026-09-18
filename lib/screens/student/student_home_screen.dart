@@ -11,6 +11,7 @@ import '../../widgets/app_button.dart';
 import '../../widgets/app_scaffold.dart';
 import '../../widgets/error_dialog.dart';
 import '../../widgets/loading_overlay.dart';
+import '../../widgets/profile_header_banner.dart';
 import '../../widgets/token_card.dart';
 import 'token_wallet_screen.dart';
 import '../profile/profile_screen.dart';
@@ -38,7 +39,6 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
     _nextMealDate = MealDateUtils.getNextMealDate();
     _isNonVegDay = MealDateUtils.isNonVegAvailable(_nextMealDate);
 
-    // Refresh manager token counts so availability is up to date
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(tokenCountsProvider.notifier).refresh();
     });
@@ -73,7 +73,6 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
         'Meal tokens booked successfully!',
         isError: false,
       );
-      // Switch to wallet tab to show new tokens
       setState(() => _currentTabIndex = 1);
     } else {
       final error = ref.read(studentActionProvider).error;
@@ -138,116 +137,50 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
             : ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  // Hero Profile Banner Container
-                  Container(
-                    padding: const EdgeInsets.all(22),
-                    decoration: BoxDecoration(
-                      gradient: AppColors.accentGradient,
-                      borderRadius: BorderRadius.circular(22),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        width: 1.5,
+                  // Profile Banner Component
+                  ProfileHeaderBanner(
+                    session: user,
+                    subtitle: 'Student Portal',
+                    trailingBadge: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.accent.withValues(alpha: 0.35),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
+                      child: Text(
+                        user.id,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
                         ),
-                      ],
+                      ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: Colors.white.withValues(alpha: 0.2),
-                                  child: Text(
-                                    widget.session.name.isNotEmpty
-                                        ? widget.session.name[0].toUpperCase()
-                                        : 'S',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Welcome, ${widget.session.name}',
-                                      style: const TextStyle(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.w800,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    const Text(
-                                      'Student Portal',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.white70,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                    extraInfo: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.event_available_rounded,
+                              size: 16, color: AppColors.studentBadge),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Next Dining Session: ${MealDateUtils.formatDate(_nextMealDate)}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.25),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-                              ),
-                              child: Text(
-                                widget.session.id,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.18),
-                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.event_available_rounded,
-                                  size: 16, color: AppColors.studentBadge),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Next Dining Session: ${MealDateUtils.formatDate(_nextMealDate)}',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -351,9 +284,6 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                       final studentNonVeg =
                           studentTokensAsync.valueOrNull?.nonVeg ?? 0;
 
-                      // Veg Validation:
-                      // 1. studentTokens.veg > 0 => "Veg token already purchased."
-                      // 2. counts.veg <= 0 => "Veg tokens are sold out."
                       final String? vegUnavailableReason = studentVeg > 0
                           ? 'Veg token already purchased.'
                           : (counts.veg <= 0 ? 'Veg tokens are sold out.' : null);
@@ -361,10 +291,6 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                       final isVegAvailable = vegUnavailableReason == null;
                       final vegSubtext = vegUnavailableReason ?? 'Available';
 
-                      // Non-Veg Validation:
-                      // 1. Not scheduled Non-Veg day => "Non-Veg meal is not served on this dining schedule."
-                      // 2. studentTokens.nonVeg > 0 => "Non-Veg token already purchased."
-                      // 3. counts.nonVeg <= 0 => "Non-Veg tokens are sold out."
                       final String? nonVegUnavailableReason = !_isNonVegDay
                           ? 'Non-Veg meal is not served on this dining schedule.'
                           : (studentNonVeg > 0

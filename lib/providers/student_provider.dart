@@ -3,8 +3,7 @@ import '../models/token_model.dart';
 import '../repositories/firestore_repository.dart';
 import 'token_provider.dart';
 
-// ─── Student Operations Notifier ──────────────────────────────────────────────
-
+/// State representation for student action workflows.
 class StudentActionState {
   final bool isLoading;
   final String? error;
@@ -29,6 +28,7 @@ class StudentActionState {
   }
 }
 
+/// Notifier for student action operations like purchasing tokens.
 class StudentActionNotifier extends Notifier<StudentActionState> {
   @override
   StudentActionState build() => const StudentActionState();

@@ -17,7 +17,7 @@ class FirestoreRepository {
 
   final String _today = DateFormat('dd-MM-yyyy').format(DateTime.now());
 
-  // ─── Auto ID Generation ──────────────────────────────────────────────────────
+  // Auto ID Generation
 
   /// Auto-generates the next sequential User ID for the specified [role].
   ///
@@ -81,7 +81,7 @@ class FirestoreRepository {
     }
   }
 
-  // ─── Auth ────────────────────────────────────────────────────────────────────
+  // Auth
 
   /// Searches for a user document across collections by doc ID, email, or Firebase Auth UID.
   Future<({DocumentSnapshot doc, UserRole role})?> _findUserDoc({
@@ -287,7 +287,7 @@ class FirestoreRepository {
     }
   }
 
-  // ─── Profile Update ──────────────────────────────────────────────────────────
+  // Profile Update
 
   /// Updates profile details in Firestore (Name, Department/Course, Photo URL).
   Future<void> updateUserProfile({
@@ -322,7 +322,7 @@ class FirestoreRepository {
     }
   }
 
-  // ─── Student Token Data ───────────────────────────────────────────────────────
+  // Student Token Data
 
   /// Reads current token holdings for a student.
   Future<StudentTokens> getStudentTokens(String roll) async {
@@ -487,7 +487,7 @@ class FirestoreRepository {
     }
   }
 
-  // ─── QR Redemption (Employee Scanner) ────────────────────────────────────────
+  // QR Redemption (Employee Scanner)
 
   Future<StudentTokens> redeemToken(String qrData) async {
     final parts = qrData.trim().split(' ');
@@ -561,7 +561,7 @@ class FirestoreRepository {
     }
   }
 
-  // ─── Token Count Management (Manager / Admin) ─────────────────────────────────
+  // Token Count Management (Manager / Admin)
 
   Future<TokenCounts> getTokenCounts() async {
     try {
@@ -600,7 +600,7 @@ class FirestoreRepository {
     }
   }
 
-  // ─── Member Retrieval (Admin & Manager) ──────────────────────────────────────
+  // Member Retrieval (Admin & Manager)
 
   /// Fetches all members in the system grouped by UserRole (Admin, Manager, Staff, Student).
   Future<Map<UserRole, List<UserSession>>> getAllMembersGrouped() async {
@@ -686,7 +686,7 @@ class FirestoreRepository {
     return list;
   }
 
-  // ─── User Creation with Firebase Auth & Firestore ─────────────────────────────
+  // User Creation with Firebase Auth & Firestore
 
   Future<void> createStudent({
     required String roll,
@@ -881,7 +881,7 @@ class FirestoreRepository {
     }
   }
 
-  // ─── User Deletion ────────────────────────────────────────────────────────────
+  // User Deletion
 
   Future<void> deleteUser(String id, UserSession currentUser) async {
     if (id[0].toLowerCase() == AppConstants.prefixAdmin) {

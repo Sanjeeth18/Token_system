@@ -4,8 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../repositories/firestore_repository.dart';
 
-// ─── Auth State ───────────────────────────────────────────────────────────────
-
 /// Represents the current authentication state.
 sealed class AuthState {
   const AuthState();
@@ -29,8 +27,7 @@ class AuthError extends AuthState {
   const AuthError(this.message);
 }
 
-// ─── Auth Notifier ────────────────────────────────────────────────────────────
-
+/// Notifier for authentication logic and session management.
 class AuthNotifier extends Notifier<AuthState> {
   static const String _keyUserSession = 'user_session_json';
 

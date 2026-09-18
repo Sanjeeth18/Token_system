@@ -4,6 +4,8 @@ import '../../core/theme/app_colors.dart';
 import '../../models/token_model.dart';
 import '../../providers/token_provider.dart';
 import '../../repositories/firestore_repository.dart';
+import '../../widgets/category_history_card.dart';
+import '../../widgets/purchase_record_tile.dart';
 import '../../widgets/token_card.dart';
 import 'qr_display_screen.dart';
 
@@ -21,6 +23,7 @@ class TokenWalletScreen extends ConsumerStatefulWidget {
 
 class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
   bool _isLoadingHistory = true;
+  bool _showAllRecords = false;
   List<TokenTransactionModel> _history = [];
 
   @override
@@ -118,59 +121,7 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                         shrinkWrap: true,
                         itemCount: filtered.length,
                         itemBuilder: (context, index) {
-                          final item = filtered[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            color: AppColors.surface,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: const BorderSide(color: AppColors.cardBorder),
-                            ),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: color.withValues(alpha: 0.15),
-                                child: Icon(
-                                  categoryCode == 'veg'
-                                      ? Icons.eco_rounded
-                                      : categoryCode == 'nonveg'
-                                          ? Icons.restaurant_rounded
-                                          : Icons.egg_rounded,
-                                  color: color,
-                                  size: 20,
-                                ),
-                              ),
-                              title: Text(
-                                '${item.count} Token(s) Purchased',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              subtitle: Text(
-                                '${item.date} at ${item.time}',
-                                style: const TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              trailing: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: AppColors.vegGreen.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: const Text(
-                                  'PURCHASED',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.vegGreen,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
+                          return PurchaseRecordTile(item: filtered[index]);
                         },
                       ),
                     ),
@@ -205,74 +156,29 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          // Header Card
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: AppColors.cardGradient,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.accent.withValues(alpha: 0.15),
-                  blurRadius: 14,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
-                  ),
-                  child: const Icon(Icons.account_balance_wallet_rounded,
-                      color: AppColors.accentLight, size: 28),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Active Tokens',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Roll Number: ${widget.rollNumber}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.refresh_rounded, color: AppColors.accent),
-                  onPressed: () {
-                    ref.read(studentTokensProvider(widget.rollNumber).notifier).refresh(widget.rollNumber);
-                    _fetchHistory();
-                  },
-                  tooltip: 'Refresh Tokens',
-                ),
-              ],
+          // Available Meal Tokens Wallet Section
+          const Text(
+            'Your Meal Tokens',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 6),
+          const Text(
+            'Tap any card to open and present your single-use QR pass.',
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.textMuted,
+            ),
+          ),
+          const SizedBox(height: 14),
 
           tokensAsync.when(
             loading: () => const Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 40),
+                padding: EdgeInsets.symmetric(vertical: 30),
                 child: CircularProgressIndicator(color: AppColors.accent),
               ),
             ),
@@ -281,10 +187,9 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
               decoration: BoxDecoration(
                 color: AppColors.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
               ),
               child: Text(
-                'Error loading tokens: $err',
+                'Error loading wallet tokens: $err',
                 style: const TextStyle(color: AppColors.error),
               ),
             ),
@@ -292,31 +197,30 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
               return Column(
                 children: [
                   TokenWalletCard(
-                    title: 'Vegetarian Meal Token',
-                    count: tokens.veg,
+                    title: 'Veg Meal Token',
+                    subtitle: 'Valid for Veg Canteen',
+                    availableCount: tokens.veg,
                     icon: Icons.eco_rounded,
                     color: AppColors.vegGreen,
-                    onShowQr: tokens.veg > 0
-                        ? () => _navigateToQr(TokenType.veg, tokens.veg)
-                        : null,
+                    onTap: () => _navigateToQr(TokenType.veg, tokens.veg),
                   ),
+                  const SizedBox(height: 12),
                   TokenWalletCard(
-                    title: 'Non-Vegetarian Meal Token',
-                    count: tokens.nonVeg,
+                    title: 'Non-Veg Meal Token',
+                    subtitle: 'Valid for Non-Veg Canteen',
+                    availableCount: tokens.nonVeg,
                     icon: Icons.restaurant_rounded,
                     color: AppColors.nonVegRed,
-                    onShowQr: tokens.nonVeg > 0
-                        ? () => _navigateToQr(TokenType.nonVeg, tokens.nonVeg)
-                        : null,
+                    onTap: () => _navigateToQr(TokenType.nonVeg, tokens.nonVeg),
                   ),
+                  const SizedBox(height: 12),
                   TokenWalletCard(
-                    title: 'Egg Tokens',
-                    count: tokens.eggs,
+                    title: 'Egg Token',
+                    subtitle: 'Valid for Egg counter',
+                    availableCount: tokens.eggs,
                     icon: Icons.egg_rounded,
                     color: AppColors.eggOrange,
-                    onShowQr: tokens.eggs > 0
-                        ? () => _navigateToQr(TokenType.eggs, tokens.eggs)
-                        : null,
+                    onTap: () => _navigateToQr(TokenType.eggs, tokens.eggs),
                   ),
                 ],
               );
@@ -354,7 +258,7 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
           else
             Column(
               children: [
-                _buildCategoryHistoryCard(
+                CategoryHistoryCard(
                   title: 'Veg Meal History',
                   subtitle: '$vegCount transaction(s) recorded',
                   icon: Icons.eco_rounded,
@@ -362,7 +266,7 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                   onTap: () => _showCategoryHistory('Veg Meal', 'veg', AppColors.vegGreen),
                 ),
                 const SizedBox(height: 10),
-                _buildCategoryHistoryCard(
+                CategoryHistoryCard(
                   title: 'Non-Veg Meal History',
                   subtitle: '$nonVegCount transaction(s) recorded',
                   icon: Icons.restaurant_rounded,
@@ -370,7 +274,7 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                   onTap: () => _showCategoryHistory('Non-Veg Meal', 'nonveg', AppColors.nonVegRed),
                 ),
                 const SizedBox(height: 10),
-                _buildCategoryHistoryCard(
+                CategoryHistoryCard(
                   title: 'Eggs History',
                   subtitle: '$eggCount transaction(s) recorded',
                   icon: Icons.egg_rounded,
@@ -379,86 +283,47 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                 ),
                 if (_history.isNotEmpty) ...[
                   const SizedBox(height: 24),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'All Purchase Records',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'All Purchased Records',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
+                      if (_history.length > 5)
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _showAllRecords = !_showAllRecords;
+                            });
+                          },
+                          child: Text(
+                            _showAllRecords ? 'Show Less' : 'Show More',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.accent,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 10),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _history.length,
-                    itemBuilder: (context, index) {
-                      final item = _history[index];
-                      final cat = item.category.toLowerCase();
-                      final isVeg = cat == 'veg';
-                      final isNonVeg = cat == 'nonveg' || cat == 'non-veg';
-                      final color = isVeg
-                          ? AppColors.vegGreen
-                          : isNonVeg
-                              ? AppColors.nonVegRed
-                              : AppColors.eggOrange;
-                      final icon = isVeg
-                          ? Icons.eco_rounded
-                          : isNonVeg
-                              ? Icons.restaurant_rounded
-                              : Icons.egg_rounded;
-                      final categoryName = isVeg
-                          ? 'Veg Meal'
-                          : isNonVeg
-                              ? 'Non-Veg Meal'
-                              : 'Egg Token';
-
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        color: AppColors.surface,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          side: const BorderSide(color: AppColors.cardBorder),
-                        ),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: color.withValues(alpha: 0.15),
-                            child: Icon(icon, color: color, size: 20),
-                          ),
-                          title: Text(
-                            '$categoryName (${item.count})',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                              fontSize: 14,
-                            ),
-                          ),
-                          subtitle: Text(
-                            'Date: ${item.date} • ${item.time}',
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
-                            ),
-                          ),
-                          trailing: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              'PURCHASED',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: color,
-                              ),
-                            ),
-                          ),
-                        ),
+                  Builder(
+                    builder: (context) {
+                      final displayedHistory =
+                          _showAllRecords ? _history : _history.take(5).toList();
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: displayedHistory.length,
+                        itemBuilder: (context, index) {
+                          return PurchaseRecordTile(item: displayedHistory[index]);
+                        },
                       );
                     },
                   ),
@@ -467,48 +332,6 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
             ),
           const SizedBox(height: 24),
         ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryHistoryCard({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      color: AppColors.surfaceElevated,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.cardBorder),
-      ),
-      child: ListTile(
-        onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: color, size: 24),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-        ),
-        trailing: const Icon(Icons.arrow_forward_ios_rounded,
-            size: 16, color: AppColors.textMuted),
       ),
     );
   }

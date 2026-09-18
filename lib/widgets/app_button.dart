@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 
-// ─── Primary Gradient Button ──────────────────────────────────────────────────
-
+/// Primary Gradient Button.
 class AppPrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -85,8 +84,7 @@ class AppPrimaryButton extends StatelessWidget {
   }
 }
 
-// ─── Danger / Destructive Button ──────────────────────────────────────────────
-
+/// Danger / Destructive Button.
 class AppDangerButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -158,8 +156,7 @@ class AppDangerButton extends StatelessWidget {
   }
 }
 
-// ─── Outline Button ───────────────────────────────────────────────────────────
-
+/// Outline Button.
 class AppOutlineButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
