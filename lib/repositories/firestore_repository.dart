@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '../core/constants/app_constants.dart';
 import '../core/error/app_exception.dart';
+import '../core/utils/date_utils.dart';
 import '../models/token_model.dart';
 import '../models/user_model.dart';
 
@@ -381,6 +382,11 @@ class FirestoreRepository {
 
         // Non-Veg purchase
         if (selection.wantsNonVeg) {
+          final nextMealDate = MealDateUtils.getNextMealDate();
+          if (!MealDateUtils.isNonVegAvailable(nextMealDate)) {
+            throw const TokenException(
+                TokenErrorType.alreadyUsed, 'Non-Veg meal is not served on this dining schedule.');
+          }
           if (current.nonVeg > 0) {
             throw const TokenException(
                 TokenErrorType.alreadyUsed, 'Non-Veg token already purchased.');
@@ -396,9 +402,9 @@ class FirestoreRepository {
           });
         }
 
-        // Eggs
+        // Eggs (cumulative addition in batches of 15)
         if (selection.eggCount > 0) {
-          newEggs = selection.eggCount;
+          newEggs = current.eggs + selection.eggCount;
         }
 
         final updated = StudentTokens(
@@ -517,6 +523,10 @@ class FirestoreRepository {
           if (current.eggs <= 0) {
             throw const TokenException(TokenErrorType.alreadyUsed,
                 'Egg token not purchased or already used.');
+          }
+          if (current.eggs < count) {
+            throw TokenException(TokenErrorType.insufficientCount,
+                'Insufficient egg tokens. Student has ${current.eggs} egg(s) available.');
           }
           newEggs = (current.eggs - count).clamp(0, current.eggs);
         } else {
