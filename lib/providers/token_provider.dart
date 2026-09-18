@@ -2,8 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/token_model.dart';
 import '../repositories/firestore_repository.dart';
 
-// ─── Token Counts (Manager Dashboard) ────────────────────────────────────────
-
+/// Token Counts Notifier for Manager and Admin dashboards.
 class TokenCountsNotifier extends Notifier<AsyncValue<TokenCounts>> {
   @override
   AsyncValue<TokenCounts> build() => const AsyncValue.loading();
@@ -35,8 +34,7 @@ final tokenCountsProvider =
   TokenCountsNotifier.new,
 );
 
-// ─── Student Tokens (Student Home / Wallet) ───────────────────────────────────
-
+/// Student Tokens Notifier for Student Home and Wallet screens.
 class StudentTokensNotifier extends FamilyNotifier<AsyncValue<StudentTokens>, String> {
   @override
   AsyncValue<StudentTokens> build(String rollNumber) {
@@ -67,8 +65,7 @@ final studentTokensProvider = NotifierProviderFamily<StudentTokensNotifier,
   StudentTokensNotifier.new,
 );
 
-// ─── Token Selection (Purchase Flow) ─────────────────────────────────────────
-
+/// Token Selection Notifier for Purchase Flow.
 class TokenSelectionNotifier extends Notifier<TokenSelection> {
   @override
   TokenSelection build() => const TokenSelection();

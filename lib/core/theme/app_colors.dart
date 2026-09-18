@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 /// Redesigned with vibrant Red, Emerald Green, Warm Gold/Yellow, Crisp White,
 /// and deep midnight slate background tones for maximum visual appeal.
 abstract class AppColors {
-  // ─── Brand Gradients ────────────────────────────────────────────────────────
+  // Brand Gradients
   static const Color gradientStart = Color(0xFF0B0F19); // Midnight slate
   static const Color gradientEnd = Color(0xFF0F172A);   // Deep slate
 
@@ -52,25 +52,25 @@ abstract class AppColors {
     colors: [Color(0xFFA855F7), Color(0xFF7E22CE)], // Amethyst Purple
   );
 
-  // ─── Primary Accent ─────────────────────────────────────────────────────────
+  // Primary Accent
   static const Color accent = Color(0xFFE11D48);       // Crimson Ruby Red
   static const Color accentLight = Color(0xFFF43F5E);  // Bright Rose
   static const Color accentDark = Color(0xFFBE123C);   // Deep Rose
 
-  // ─── Surface / Background ───────────────────────────────────────────────────
+  // Surface / Background
   static const Color background = Color(0xFF0B0F19);
   static const Color surface = Color(0xFF161F30);        // Card surface
   static const Color surfaceElevated = Color(0xFF1F2C42); // Elevated cards
   static const Color surfaceBorder = Color(0xFF2A3A54);
   static const Color cardBorder = surfaceBorder;
 
-  // ─── Text ───────────────────────────────────────────────────────────────────
+  // Text
   static const Color textPrimary = Color(0xFFFFFFFF);    // Crisp Pure White
   static const Color textSecondary = Color(0xFF94A3B8);  // Slate Silver
   static const Color textMuted = Color(0xFF64748B);      // Cool Muted Slate
   static const Color textOnAccent = Colors.white;
 
-  // ─── Status ─────────────────────────────────────────────────────────────────
+  // Status
   static const Color success = Color(0xFF10B981);         // Emerald Green
   static const Color successSurface = Color(0xFF022C22);
   static const Color warning = Color(0xFFF59E0B);         // Amber Yellow
@@ -80,7 +80,7 @@ abstract class AppColors {
   static const Color info = Color(0xFF38BDF8);            // Electric Cyan
   static const Color infoSurface = Color(0xFF0C4A6E);
 
-  // ─── Token Type Colors ───────────────────────────────────────────────────────
+  // Token Type Colors
   static const Color vegGreen = Color(0xFF10B981);       // Emerald Green
   static const Color vegSurface = Color(0xFF064E3B);
   static const Color nonVegRed = Color(0xFFEF4444);       // Crimson Red
@@ -89,7 +89,7 @@ abstract class AppColors {
   static const Color eggOrange = Color(0xFFF59E0B);      // Amber Gold Yellow
   static const Color eggSurface = Color(0xFF78350F);
 
-  // ─── Role Badge Colors ───────────────────────────────────────────────────────
+  // Role Badge Colors
   static const Color adminColor = Color(0xFFC084FC);   // Amethyst Light Purple
   static const Color managerColor = Color(0xFF38BDF8); // Cyan Light Blue
   static const Color employeeColor = Color(0xFFFB923C); // Warm Orange Amber
@@ -100,12 +100,12 @@ abstract class AppColors {
   static const Color employeeBadge = employeeColor;
   static const Color studentBadge = studentColor;
 
-  // ─── Divider / Border ────────────────────────────────────────────────────────
+  // Divider / Border
   static const Color divider = Color(0xFF2A3A54);
   static const Color inputBorder = Color(0xFF2A3A54);
   static const Color inputFocusBorder = Color(0xFFE11D48);
 
-  // ─── Glass Effect ────────────────────────────────────────────────────────────
+  // Glass Effect
   static const Color glassSurface = Color(0x1AFFFFFF);
   static const Color glassBorder = Color(0x33FFFFFF);
 }

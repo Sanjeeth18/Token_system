@@ -8,10 +8,10 @@ import '../../providers/token_provider.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_scaffold.dart';
 import '../../widgets/error_dialog.dart';
+import '../../widgets/profile_header_banner.dart';
 import '../../widgets/token_card.dart';
 import '../manager/create_user_screen.dart';
 import '../manager/delete_user_screen.dart';
-
 import '../profile/profile_screen.dart';
 import 'view_members_screen.dart';
 
@@ -106,81 +106,23 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
           padding: const EdgeInsets.all(20),
           children: [
             // Admin Profile Banner
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: AppColors.adminGradient,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: AppColors.adminBadge.withValues(alpha: 0.5),
-                  width: 1.5,
+            ProfileHeaderBanner(
+              session: user,
+              trailingBadge: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.adminBadge.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.adminBadge.withValues(alpha: 0.25),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
+                child: const Text(
+                  'SUPERUSER',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.adminBadge,
                   ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.adminBadge.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.shield_rounded,
-                        color: AppColors.adminBadge, size: 28),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              widget.session.name,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color:
-                                    AppColors.adminBadge.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Text(
-                                'SUPERUSER',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.adminBadge,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Admin ID: ${widget.session.id}',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
             const SizedBox(height: 24),

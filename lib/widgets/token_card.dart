@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 
-// ─── Interactive Selection Token Card (Student Purchase Screen) ───────────────
-
+/// Interactive Selection Token Card for Student Purchase Screen.
 class TokenSelectionCard extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -131,27 +130,33 @@ class TokenSelectionCard extends StatelessWidget {
   }
 }
 
-// ─── Token Wallet Display Card (Student Wallet) ───────────────────────────────
-
+/// Token Wallet Display Card for Student Wallet.
 class TokenWalletCard extends StatelessWidget {
   final String title;
   final int count;
   final IconData icon;
   final Color color;
   final VoidCallback? onShowQr;
+  final String subtitle;
+  final VoidCallback? onTap;
+  final int? availableCount;
 
   const TokenWalletCard({
     super.key,
     required this.title,
-    required this.count,
+    this.count = 0,
     required this.icon,
     required this.color,
     this.onShowQr,
+    this.subtitle = '',
+    this.onTap,
+    this.availableCount,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bool hasToken = count > 0;
+    final effectiveCount = availableCount ?? count;
+    final bool hasToken = effectiveCount > 0;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -173,68 +178,75 @@ class TokenWalletCard extends StatelessWidget {
               ]
             : [],
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: color.withValues(alpha: 0.3)),
+      child: InkWell(
+        onTap: hasToken ? (onTap ?? onShowQr) : null,
+        borderRadius: BorderRadius.circular(18),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: color.withValues(alpha: 0.3)),
+              ),
+              child: Icon(icon, color: color, size: 28),
             ),
-            child: Icon(icon, color: color, size: 28),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  hasToken ? 'Active Pool: $count' : 'No active tokens',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: hasToken
-                        ? AppColors.textSecondary
-                        : AppColors.textMuted,
-                    fontWeight: hasToken ? FontWeight.w600 : FontWeight.w400,
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle.isNotEmpty
+                        ? subtitle
+                        : (hasToken
+                            ? 'Active Pool: $effectiveCount'
+                            : 'No active tokens'),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: hasToken
+                          ? AppColors.textSecondary
+                          : AppColors.textMuted,
+                      fontWeight: hasToken ? FontWeight.w600 : FontWeight.w400,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          if (hasToken && onShowQr != null)
-            ElevatedButton.icon(
-              onPressed: onShowQr,
-              icon: const Icon(Icons.qr_code_rounded, size: 18),
-              label: const Text('Show QR'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: color,
-                foregroundColor: Colors.white,
-                elevation: 2,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                ],
               ),
             ),
-        ],
+            if (hasToken)
+              ElevatedButton.icon(
+                onPressed: onTap ?? onShowQr,
+                icon: const Icon(Icons.qr_code_rounded, size: 18),
+                label: const Text('Show QR'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: color,
+                  foregroundColor: Colors.white,
+                  elevation: 2,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
 }
 
-// ─── Manager Dashboard Metric Stat Card ───────────────────────────────────────
-
+/// Manager Dashboard Metric Stat Card.
 class TokenStatCard extends StatelessWidget {
   final String title;
   final String value;

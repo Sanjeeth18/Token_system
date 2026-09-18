@@ -7,12 +7,12 @@ import '../../providers/auth_provider.dart';
 import '../../providers/token_provider.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_scaffold.dart';
-import '../../widgets/app_text_field.dart';
 import '../../widgets/error_dialog.dart';
+import '../../widgets/profile_header_banner.dart';
 import '../../widgets/token_card.dart';
+import '../../widgets/token_quota_card.dart';
 import 'create_user_screen.dart';
 import 'delete_user_screen.dart';
-
 import '../profile/profile_screen.dart';
 
 class ManagerScreen extends ConsumerStatefulWidget {
@@ -146,58 +146,7 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
           padding: const EdgeInsets.all(20),
           children: [
             // Manager Profile Banner
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: AppColors.cardGradient,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: AppColors.managerBadge.withValues(alpha: 0.4)),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.managerBadge.withValues(alpha: 0.15),
-                    blurRadius: 14,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.managerBadge.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.admin_panel_settings_rounded,
-                        color: AppColors.managerBadge, size: 28),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.session.name,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Manager ID: ${widget.session.id}',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            ProfileHeaderBanner(session: user),
             const SizedBox(height: 24),
 
             // Token Metrics Grid
@@ -268,127 +217,14 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
             ),
             const SizedBox(height: 28),
 
-            // Daily Quota Controls Card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: AppColors.cardBorder),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Set Token Pool Quota',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Update available token quantities for the next dining session.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-
-                  // Veg Quota Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppTextField(
-                          label: 'Veg Quota',
-                          hint: 'e.g. 150',
-                          controller: _vegCountController,
-                          keyboardType: TextInputType.number,
-                          prefixIcon: Icons.eco_rounded,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 24),
-                        child: SizedBox(
-                          height: 48,
-                          child: ElevatedButton(
-                            onPressed: _isUpdatingVeg
-                                ? null
-                                : () => _updateCount('veg', _vegCountController),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.vegGreen,
-                              disabledBackgroundColor: AppColors.vegGreen.withValues(alpha: 0.8),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: _isUpdatingVeg
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Text('Set Veg'),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Non-Veg Quota Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppTextField(
-                          label: 'Non-Veg Quota',
-                          hint: 'e.g. 100',
-                          controller: _nonVegCountController,
-                          keyboardType: TextInputType.number,
-                          prefixIcon: Icons.restaurant_rounded,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 24),
-                        child: SizedBox(
-                          height: 48,
-                          child: ElevatedButton(
-                            onPressed: _isUpdatingNonVeg
-                                ? null
-                                : () => _updateCount('non-veg', _nonVegCountController),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.nonVegRed,
-                              disabledBackgroundColor: AppColors.nonVegRed.withValues(alpha: 0.8),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: _isUpdatingNonVeg
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Text('Set Non-Veg'),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            // Daily Quota Controls Card Component
+            TokenQuotaCard(
+              vegController: _vegCountController,
+              nonVegController: _nonVegCountController,
+              isUpdatingVeg: _isUpdatingVeg,
+              isUpdatingNonVeg: _isUpdatingNonVeg,
+              onUpdateVeg: () => _updateCount('veg', _vegCountController),
+              onUpdateNonVeg: () => _updateCount('non-veg', _nonVegCountController),
             ),
             const SizedBox(height: 28),
 
