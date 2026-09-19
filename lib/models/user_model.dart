@@ -32,6 +32,7 @@ enum UserRole {
         return UserRole.manager;
       case 'e':
         return UserRole.employee;
+      case 's':
       case '2':
         return UserRole.student;
       default:

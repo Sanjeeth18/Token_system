@@ -9,6 +9,7 @@
 .history
 .svn/
 migrate_working_dir/
+__pycache__/
 
 # IntelliJ related
 *.iml
@@ -16,10 +17,8 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# VS Code
+.vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -30,6 +29,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+/android/build/
 
 # Symbolication related
 app.*.symbols
@@ -42,5 +42,7 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Environment & Secrets
 .env
 serviceAccountKey.json
+init_firebase.py

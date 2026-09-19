@@ -46,7 +46,7 @@ class ProfileScreen extends ConsumerWidget {
             }
           },
           itemBuilder: (context) => [
-            if (user.role == UserRole.admin || user.role == UserRole.manager) ...[
+            if (user.role == UserRole.manager) ...[
               const PopupMenuItem(
                 value: 'create',
                 child: Row(
@@ -321,99 +321,178 @@ class ProfileScreen extends ConsumerWidget {
     final newPassController = TextEditingController();
     final confirmPassController = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    bool isUpdating = false;
 
     await showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) {
-        return AlertDialog(
-          backgroundColor: AppColors.surfaceElevated,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('Change Password', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
-          content: SingleChildScrollView(
-            child: Form(
-              key: formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AppTextField(
-                    label: 'Current Password',
-                    hint: 'Enter current password',
-                    controller: oldPassController,
-                    isPassword: true,
-                    validator: (val) => val == null || val.isEmpty ? 'Current password required' : null,
-                  ),
-                  const SizedBox(height: 14),
-                  AppTextField(
-                    label: 'New Password',
-                    hint: 'Enter new password',
-                    controller: newPassController,
-                    isPassword: true,
-                    validator: (val) {
-                      if (val == null || val.isEmpty) return 'New password required';
-                      if (val.length < 8) return 'Minimum 8 characters required';
-                      if (!RegExp(r'[A-Z]').hasMatch(val)) return 'Must contain at least 1 uppercase letter';
-                      if (!RegExp(r'[a-z]').hasMatch(val)) return 'Must contain at least 1 lowercase letter';
-                      if (!RegExp(r'[0-9!@#$%^&*(),.?":{}|<>]').hasMatch(val)) {
-                        return 'Must contain at least 1 digit or special character';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 14),
-                  AppTextField(
-                    label: 'Confirm New Password',
-                    hint: 'Re-enter new password',
-                    controller: confirmPassController,
-                    isPassword: true,
-                    validator: (val) {
-                      if (val == null || val.isEmpty) return 'Please confirm your new password';
-                      if (val != newPassController.text) return 'Passwords do not match';
-                      return null;
-                    },
-                  ),
-                ],
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: AppColors.surfaceElevated,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: const Text(
+                'Change Password',
+                style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
               ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (!formKey.currentState!.validate()) return;
-                final oldPass = oldPassController.text.trim();
-                final newPass = newPassController.text.trim();
+              content: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AppTextField(
+                        label: 'Current Password',
+                        hint: 'Enter current password',
+                        controller: oldPassController,
+                        isPassword: true,
+                        enabled: !isUpdating,
+                        validator: (val) {
+                          if (val == null || val.isEmpty) {
+                            return 'Current password required';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 14),
+                      AppTextField(
+                        label: 'New Password',
+                        hint: 'Enter new password',
+                        controller: newPassController,
+                        isPassword: true,
+                        enabled: !isUpdating,
+                        validator: (val) {
+                          if (val == null || val.isEmpty) return 'New password required';
+                          if (val.length < 8) return 'Minimum 8 characters required';
+                          if (!RegExp(r'[A-Z]').hasMatch(val)) return 'Must contain at least 1 uppercase letter';
+                          if (!RegExp(r'[a-z]').hasMatch(val)) return 'Must contain at least 1 lowercase letter';
+                          if (!RegExp(r'[0-9!@#$%^&*(),.?":{}|<>]').hasMatch(val)) {
+                            return 'Must contain at least 1 digit or special character';
+                          }
+                          if (val == oldPassController.text.trim()) {
+                            return 'New password must differ from current password';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 14),
+                      AppTextField(
+                        label: 'Confirm New Password',
+                        hint: 'Re-enter new password',
+                        controller: confirmPassController,
+                        isPassword: true,
+                        enabled: !isUpdating,
+                        validator: (val) {
+                          if (val == null || val.isEmpty) return 'Please confirm your new password';
+                          if (val != newPassController.text) return 'Passwords do not match';
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isUpdating ? null : () => Navigator.pop(ctx),
+                  child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
+                ),
+                ElevatedButton(
+                  onPressed: isUpdating
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          final oldPass = oldPassController.text.trim();
+                          final newPass = newPassController.text.trim();
 
-                try {
-                  final currentUser = FirebaseAuth.instance.currentUser;
-                  if (currentUser != null && currentUser.email != null) {
-                    final cred = EmailAuthProvider.credential(email: currentUser.email!, password: oldPass);
-                    await currentUser.reauthenticateWithCredential(cred);
-                    await currentUser.updatePassword(newPass);
-                  }
-                  if (ctx.mounted) {
-                    Navigator.pop(ctx);
-                    AppFeedback.showSnackBar(context, 'Password updated successfully!', isError: false);
-                  }
-                } catch (e) {
-                  if (ctx.mounted) {
-                    AppFeedback.showSnackBar(ctx, 'Failed to update password: $e', isError: true);
-                  }
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              child: const Text('Update'),
-            ),
-          ],
+                          setDialogState(() => isUpdating = true);
+
+                          try {
+                            final currentUser = FirebaseAuth.instance.currentUser;
+                            if (currentUser == null || currentUser.email == null) {
+                              throw const FormatException(
+                                'Authentication session not found. Please log in again.',
+                              );
+                            }
+
+                            final cred = EmailAuthProvider.credential(
+                              email: currentUser.email!,
+                              password: oldPass,
+                            );
+
+                            await currentUser.reauthenticateWithCredential(cred);
+                            await currentUser.updatePassword(newPass);
+
+                            if (ctx.mounted) {
+                              Navigator.pop(ctx);
+                              AppFeedback.showSnackBar(
+                                context,
+                                'Password updated successfully!',
+                                isError: false,
+                              );
+                            }
+                          } catch (e) {
+                            String errorMsg = 'Failed to update password. Please try again.';
+                            if (e is FirebaseAuthException) {
+                              switch (e.code) {
+                                case 'wrong-password':
+                                case 'invalid-credential':
+                                  errorMsg = 'Current password is incorrect.';
+                                  break;
+                                case 'weak-password':
+                                  errorMsg = 'The new password provided is too weak.';
+                                  break;
+                                case 'requires-recent-login':
+                                  errorMsg = 'Please sign out and sign in again before changing password.';
+                                  break;
+                                case 'user-mismatch':
+                                  errorMsg = 'User credential mismatch. Please log in again.';
+                                  break;
+                                case 'too-many-requests':
+                                  errorMsg = 'Too many attempts. Please try again later.';
+                                  break;
+                                default:
+                                  errorMsg = e.message ?? e.code;
+                              }
+                            } else if (e is FormatException) {
+                              errorMsg = e.message;
+                            } else {
+                              errorMsg = e.toString().replaceAll('Exception: ', '');
+                            }
+
+                            if (ctx.mounted) {
+                              setDialogState(() => isUpdating = false);
+                              AppFeedback.showSnackBar(ctx, errorMsg, isError: true);
+                            }
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: isUpdating
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text('Update'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
+
+    oldPassController.dispose();
+    newPassController.dispose();
+    confirmPassController.dispose();
   }
 
   Widget _buildAvatarFallback(UserSession user, Color roleColor) {

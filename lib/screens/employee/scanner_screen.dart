@@ -19,7 +19,7 @@ class ScannerScreen extends StatefulWidget {
 
 class _ScannerScreenState extends State<ScannerScreen> {
   final MobileScannerController _controller = MobileScannerController(
-    detectionSpeed: DetectionSpeed.noDuplicates,
+    detectionSpeed: DetectionSpeed.normal,
     facing: CameraFacing.back,
     torchEnabled: false,
   );
@@ -169,8 +169,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.of(ctx).pop();
-              // Reset processing to allow next scan
-              Future.delayed(const Duration(milliseconds: 500), () {
+              // Reset processing to allow next scan immediately
+              Future.delayed(const Duration(milliseconds: 300), () {
                 if (mounted) {
                   setState(() => _isProcessing = false);
                 }
@@ -216,11 +216,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
             onPressed: () => _controller.toggleTorch(),
             tooltip: 'Toggle Flashlight',
           ),
-          IconButton(
-            icon: const Icon(Icons.flip_camera_ios_rounded, color: Colors.white70),
-            onPressed: () => _controller.switchCamera(),
-            tooltip: 'Switch Camera',
-          ),
         ],
       ),
       body: Stack(
@@ -246,30 +241,58 @@ class _ScannerScreenState extends State<ScannerScreen> {
             ),
           ),
 
+          // Standard Loading Indicator while processing redemption
+          if (_isProcessing)
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(22),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceElevated.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.cardBorder),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const SizedBox(
+                  width: 38,
+                  height: 38,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                  ),
+                ),
+              ),
+            ),
+
           // Instruction Text
           Positioned(
             bottom: 48,
             left: 24,
             right: 24,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.7),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.white24),
-              ),
-              child: Text(
-                _isProcessing
-                    ? 'Processing redemption...'
-                    : 'Align student QR code within the frame to redeem',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: _isProcessing ? AppColors.accentLight : Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
+            child: !_isProcessing
+                ? Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Text(
+                      'Align student QR code within the frame to redeem',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
           ),
         ],
       ),

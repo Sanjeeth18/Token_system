@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/token_model.dart';
 import '../../providers/token_provider.dart';
-import '../../repositories/firestore_repository.dart';
 import '../../widgets/category_history_card.dart';
 import '../../widgets/purchase_record_tile.dart';
 import '../../widgets/token_card.dart';
@@ -22,31 +21,7 @@ class TokenWalletScreen extends ConsumerStatefulWidget {
 }
 
 class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
-  bool _isLoadingHistory = true;
   bool _showAllRecords = false;
-  List<TokenTransactionModel> _history = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchHistory();
-  }
-
-  Future<void> _fetchHistory() async {
-    setState(() => _isLoadingHistory = true);
-    try {
-      final list = await FirestoreRepository.instance
-          .getStudentTransactionHistory(widget.rollNumber);
-      if (mounted) {
-        setState(() {
-          _history = list;
-          _isLoadingHistory = false;
-        });
-      }
-    } catch (_) {
-      if (mounted) setState(() => _isLoadingHistory = false);
-    }
-  }
 
   Future<void> _navigateToQr(TokenType tokenType, int availableCount) async {
     await Navigator.push(
@@ -61,12 +36,12 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
     );
     if (mounted) {
       ref.read(studentTokensProvider(widget.rollNumber).notifier).refresh(widget.rollNumber);
-      _fetchHistory();
+      ref.invalidate(studentPurchasesHistoryProvider(widget.rollNumber));
     }
   }
 
-  void _showCategoryHistory(String categoryTitle, String categoryCode, Color color) {
-    final filtered = _history.where((t) {
+  void _showCategoryHistory(String categoryTitle, String categoryCode, Color color, List<TokenTransactionModel> history) {
+    final filtered = history.where((t) {
       final cat = t.category.toLowerCase();
       if (categoryCode == 'veg') return cat == 'veg';
       if (categoryCode == 'nonveg') return cat == 'nonveg' || cat == 'non-veg';
@@ -135,13 +110,15 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
   @override
   Widget build(BuildContext context) {
     final tokensAsync = ref.watch(studentTokensProvider(widget.rollNumber));
+    final historyAsync = ref.watch(studentPurchasesHistoryProvider(widget.rollNumber));
+    final history = historyAsync.valueOrNull ?? [];
 
-    final vegCount = _history.where((t) => t.category.toLowerCase() == 'veg').length;
-    final nonVegCount = _history.where((t) {
+    final vegCount = history.where((t) => t.category.toLowerCase() == 'veg').length;
+    final nonVegCount = history.where((t) {
       final cat = t.category.toLowerCase();
       return cat == 'nonveg' || cat == 'non-veg';
     }).length;
-    final eggCount = _history.where((t) {
+    final eggCount = history.where((t) {
       final cat = t.category.toLowerCase();
       return cat == 'egg' || cat == 'eggs';
     }).length;
@@ -149,7 +126,7 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
     return RefreshIndicator(
       onRefresh: () async {
         await ref.read(studentTokensProvider(widget.rollNumber).notifier).refresh(widget.rollNumber);
-        await _fetchHistory();
+        ref.invalidate(studentPurchasesHistoryProvider(widget.rollNumber));
       },
       color: AppColors.accent,
       backgroundColor: AppColors.surfaceElevated,
@@ -198,7 +175,9 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                 children: [
                   TokenWalletCard(
                     title: 'Veg Meal Token',
-                    subtitle: 'Valid for Veg Canteen',
+                    subtitle: tokens.veg > 0
+                        ? 'Valid for Veg Canteen'
+                        : 'There are no available tokens',
                     availableCount: tokens.veg,
                     icon: Icons.eco_rounded,
                     color: AppColors.vegGreen,
@@ -207,7 +186,9 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                   const SizedBox(height: 12),
                   TokenWalletCard(
                     title: 'Non-Veg Meal Token',
-                    subtitle: 'Valid for Non-Veg Canteen',
+                    subtitle: tokens.nonVeg > 0
+                        ? 'Valid for Non-Veg Canteen'
+                        : 'There are no available tokens',
                     availableCount: tokens.nonVeg,
                     icon: Icons.restaurant_rounded,
                     color: AppColors.nonVegRed,
@@ -216,7 +197,9 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                   const SizedBox(height: 12),
                   TokenWalletCard(
                     title: 'Egg Token',
-                    subtitle: 'Valid for Egg counter',
+                    subtitle: tokens.eggs > 0
+                        ? 'Valid for Egg counter'
+                        : 'There are no available tokens',
                     availableCount: tokens.eggs,
                     icon: Icons.egg_rounded,
                     color: AppColors.eggOrange,
@@ -248,7 +231,7 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
           ),
           const SizedBox(height: 14),
 
-          if (_isLoadingHistory)
+          if (historyAsync.isLoading && history.isEmpty)
             const Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 20),
@@ -263,7 +246,7 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                   subtitle: '$vegCount transaction(s) recorded',
                   icon: Icons.eco_rounded,
                   color: AppColors.vegGreen,
-                  onTap: () => _showCategoryHistory('Veg Meal', 'veg', AppColors.vegGreen),
+                  onTap: () => _showCategoryHistory('Veg Meal', 'veg', AppColors.vegGreen, history),
                 ),
                 const SizedBox(height: 10),
                 CategoryHistoryCard(
@@ -271,7 +254,7 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                   subtitle: '$nonVegCount transaction(s) recorded',
                   icon: Icons.restaurant_rounded,
                   color: AppColors.nonVegRed,
-                  onTap: () => _showCategoryHistory('Non-Veg Meal', 'nonveg', AppColors.nonVegRed),
+                  onTap: () => _showCategoryHistory('Non-Veg Meal', 'nonveg', AppColors.nonVegRed, history),
                 ),
                 const SizedBox(height: 10),
                 CategoryHistoryCard(
@@ -279,9 +262,9 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                   subtitle: '$eggCount transaction(s) recorded',
                   icon: Icons.egg_rounded,
                   color: AppColors.eggOrange,
-                  onTap: () => _showCategoryHistory('Eggs', 'egg', AppColors.eggOrange),
+                  onTap: () => _showCategoryHistory('Eggs', 'egg', AppColors.eggOrange, history),
                 ),
-                if (_history.isNotEmpty) ...[
+                if (history.isNotEmpty) ...[
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -294,7 +277,7 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      if (_history.length > 5)
+                      if (history.length > 5)
                         TextButton(
                           onPressed: () {
                             setState(() {
@@ -316,7 +299,7 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                   Builder(
                     builder: (context) {
                       final displayedHistory =
-                          _showAllRecords ? _history : _history.take(5).toList();
+                          _showAllRecords ? history : history.take(5).toList();
                       return ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),

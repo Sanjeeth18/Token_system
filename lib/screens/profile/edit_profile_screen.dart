@@ -76,8 +76,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             uiSettings: [
               AndroidUiSettings(
                 toolbarTitle: 'Crop Circular Profile Picture',
-                toolbarColor: AppColors.accent,
+                toolbarColor: AppColors.surfaceElevated,
                 toolbarWidgetColor: Colors.white,
+                statusBarLight: false,
+                activeControlsWidgetColor: AppColors.accent,
                 initAspectRatio: CropAspectRatioPreset.square,
                 lockAspectRatio: true,
                 cropStyle: CropStyle.circle,
@@ -86,6 +88,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 title: 'Crop Circular Profile Picture',
                 cropStyle: CropStyle.circle,
                 aspectRatioLockEnabled: true,
+                resetButtonHidden: false,
               ),
               WebUiSettings(
                 context: context,

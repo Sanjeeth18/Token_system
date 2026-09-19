@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import '../core/constants/app_constants.dart';
 import '../core/error/app_exception.dart';
@@ -98,6 +100,8 @@ class FirestoreRepository {
         targetCollections = [(UserRole.admin, AppConstants.colAdmins)];
       } else if (uppercaseId.startsWith('E')) {
         targetCollections = [(UserRole.employee, AppConstants.colEmployees)];
+      } else if (uppercaseId.startsWith('S')) {
+        targetCollections = [(UserRole.student, AppConstants.colStudents)];
       } else if (uppercaseId.startsWith('M')) {
         // Manager IDs start with 'M' (e.g. M101). Students can also have M prefix or Roll Number.
         targetCollections = [
@@ -339,9 +343,15 @@ class FirestoreRepository {
   /// Purchases tokens for a student, decrementing the global Tokens/Counts doc.
   Future<StudentTokens> purchaseTokens(
       String roll, TokenSelection selection) async {
+    final cleanRoll = roll.trim().toUpperCase();
     try {
+      if (!MealDateUtils.isStudentPurchaseWindowOpen()) {
+        throw const TokenException(
+            TokenErrorType.alreadyUsed, 'Token purchases open after 6:00 AM.');
+      }
+
       final studentRef =
-          _db.collection(AppConstants.colStudents).doc(roll);
+          _db.collection(AppConstants.colStudents).doc(cleanRoll);
       final countsRef = _db
           .collection(AppConstants.colTokens)
           .doc(AppConstants.docTokenCounts);
@@ -382,15 +392,6 @@ class FirestoreRepository {
 
         // Non-Veg purchase
         if (selection.wantsNonVeg) {
-          if (!MealDateUtils.isNonVegPurchaseDay(DateTime.now())) {
-            throw const TokenException(
-                TokenErrorType.alreadyUsed, 'Non-Veg tokens can only be purchased on Sunday, Wednesday, and Friday.');
-          }
-          final nextMealDate = MealDateUtils.getNextMealDate();
-          if (!MealDateUtils.isNonVegAvailable(nextMealDate)) {
-            throw const TokenException(
-                TokenErrorType.alreadyUsed, 'Non-Veg meal is not served on this dining schedule.');
-          }
           if (current.nonVeg > 0) {
             throw const TokenException(
                 TokenErrorType.alreadyUsed, 'Non-Veg token already purchased.');
@@ -430,7 +431,7 @@ class FirestoreRepository {
 
       if (selection.wantsVeg) {
         await _db.collection(AppConstants.colPurchases).add({
-          'rollNumber': roll,
+          'rollNumber': cleanRoll,
           'category': 'veg',
           'count': 1,
           'date': dateStr,
@@ -440,7 +441,7 @@ class FirestoreRepository {
       }
       if (selection.wantsNonVeg) {
         await _db.collection(AppConstants.colPurchases).add({
-          'rollNumber': roll,
+          'rollNumber': cleanRoll,
           'category': 'nonveg',
           'count': 1,
           'date': dateStr,
@@ -450,7 +451,7 @@ class FirestoreRepository {
       }
       if (selection.eggCount > 0) {
         await _db.collection(AppConstants.colPurchases).add({
-          'rollNumber': roll,
+          'rollNumber': cleanRoll,
           'category': 'egg',
           'count': selection.eggCount,
           'date': dateStr,
@@ -472,18 +473,12 @@ class FirestoreRepository {
   /// Fetches detailed transaction history for a student.
   Future<List<TokenTransactionModel>> getStudentTransactionHistory(String roll) async {
     try {
-      final snap = await _db.collection(AppConstants.colPurchases).get();
-      final list = <TokenTransactionModel>[];
       final targetRoll = roll.trim().toUpperCase();
-
-      for (final doc in snap.docs) {
-        final data = doc.data();
-        final docRoll = (data['rollNumber'] as String? ?? '').trim().toUpperCase();
-        if (docRoll == targetRoll) {
-          list.add(TokenTransactionModel.fromFirestore(doc));
-        }
-      }
-
+      final snap = await _db
+          .collection(AppConstants.colPurchases)
+          .where('rollNumber', isEqualTo: targetRoll)
+          .get();
+      final list = snap.docs.map((doc) => TokenTransactionModel.fromFirestore(doc)).toList();
       list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
       return list;
     } catch (e) {
@@ -497,11 +492,28 @@ class FirestoreRepository {
     final parts = qrData.trim().split(' ');
     if (parts.length < 3) throw const InvalidQrDataException();
 
-    final roll = parts[0];
+    final roll = parts[0].trim().toUpperCase();
     final type = parts[1].toLowerCase();
     final count = int.tryParse(parts[2]) ?? 0;
+    final nonce = parts.length >= 4 ? parts[3].trim() : null;
 
     if (count <= 0) throw const InvalidQrDataException();
+
+    // Check if this specific QR nonce was already redeemed
+    if (nonce != null && nonce.isNotEmpty) {
+      final existing = await _db
+          .collection(AppConstants.colRedemptions)
+          .where('rollNumber', isEqualTo: roll)
+          .where('nonce', isEqualTo: nonce)
+          .limit(1)
+          .get();
+      if (existing.docs.isNotEmpty) {
+        throw const TokenException(
+          TokenErrorType.alreadyUsed,
+          'QR code already used.',
+        );
+      }
+    }
 
     try {
       final studentRef =
@@ -567,6 +579,7 @@ class FirestoreRepository {
         'rollNumber': roll,
         'category': normalizedCategory,
         'count': count,
+        'nonce': nonce ?? '',
         'date': dateStr,
         'time': timeStr,
         'timestamp': FieldValue.serverTimestamp(),
@@ -595,19 +608,28 @@ class FirestoreRepository {
       if (!snap.exists) return TokenCounts.empty;
 
       final data = snap.data()!;
+      final now = DateTime.now();
+      final todayDateStr = DateFormat('yyyy-MM-dd').format(now);
+
+      final lastResetDateStr = data['lastResetDate'] as String?;
       final lastResetTs = data['lastVegReset'];
       DateTime? lastReset;
       if (lastResetTs is Timestamp) {
         lastReset = lastResetTs.toDate();
       }
 
-      final now = DateTime.now();
-      if (lastReset == null || now.difference(lastReset).inHours >= 24) {
+      // Automatically reset to 5,000 at the start of each new day (00:00 midnight)
+      final bool isNewDay = lastResetDateStr != todayDateStr ||
+          (lastReset != null && DateFormat('yyyy-MM-dd').format(lastReset) != todayDateStr);
+
+      if (isNewDay) {
         await ref.set({
           ...data,
           AppConstants.fieldVeg: 5000,
           AppConstants.fieldVegPurchased: 0,
+          AppConstants.fieldNonVegPurchased: 0,
           'lastVegReset': FieldValue.serverTimestamp(),
+          'lastResetDate': todayDateStr,
         }, SetOptions(merge: true));
 
         final updatedSnap = await ref.get();
@@ -625,13 +647,11 @@ class FirestoreRepository {
       final now = DateTime.now();
       if (type == 'veg') {
         if (!MealDateUtils.canManagerUpdateVeg(now)) {
-          throw const FirestoreException('Veg token pool updates are allowed only before 8:00 AM.');
+          throw const FirestoreException('Token pool updates are allowed only before 6:00 AM.');
         }
       } else if (type == 'non-veg') {
         if (!MealDateUtils.canManagerUpdateNonVeg(now)) {
-          throw const FirestoreException(
-            'Non-Veg token pool updates are allowed only on Sunday, Wednesday, and Friday before 8:00 AM.',
-          );
+          throw const FirestoreException('Token pool updates are allowed only before 6:00 AM.');
         }
       }
 
@@ -661,18 +681,19 @@ class FirestoreRepository {
 
   Future<List<TokenTransactionModel>> getAllPurchasesHistory({String? category}) async {
     try {
-      final snap = await _db.collection(AppConstants.colPurchases).get();
-      final list = <TokenTransactionModel>[];
+      Query<Map<String, dynamic>> query = _db.collection(AppConstants.colPurchases);
       final cat = category?.toLowerCase();
-
-      for (final doc in snap.docs) {
-        final item = TokenTransactionModel.fromFirestore(doc);
-        final itemCat = item.category.toLowerCase();
-        if (cat == null || itemCat == cat || (cat == 'nonveg' && itemCat == 'non-veg') || (cat == 'egg' && itemCat == 'eggs')) {
-          list.add(item);
+      if (cat != null && cat.isNotEmpty) {
+        if (cat == 'egg' || cat == 'eggs') {
+          query = query.where('category', whereIn: ['egg', 'eggs']);
+        } else if (cat == 'nonveg' || cat == 'non-veg') {
+          query = query.where('category', whereIn: ['nonveg', 'non-veg']);
+        } else {
+          query = query.where('category', isEqualTo: cat);
         }
       }
-
+      final snap = await query.get();
+      final list = snap.docs.map((doc) => TokenTransactionModel.fromFirestore(doc)).toList();
       list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
       return list;
     } catch (e) {
@@ -682,21 +703,19 @@ class FirestoreRepository {
 
   Future<List<TokenTransactionModel>> getAllRedemptionsHistory({String? category}) async {
     try {
-      var snap = await _db.collection(AppConstants.colRedemptions).get();
-      if (snap.docs.isEmpty) {
-        snap = await _db.collection('Redemptions').get();
-      }
-      final list = <TokenTransactionModel>[];
+      Query<Map<String, dynamic>> query = _db.collection(AppConstants.colRedemptions);
       final cat = category?.toLowerCase();
-
-      for (final doc in snap.docs) {
-        final item = TokenTransactionModel.fromFirestore(doc);
-        final itemCat = item.category.toLowerCase();
-        if (cat == null || itemCat == cat || (cat == 'nonveg' && itemCat == 'non-veg') || (cat == 'egg' && itemCat == 'eggs')) {
-          list.add(item);
+      if (cat != null && cat.isNotEmpty) {
+        if (cat == 'egg' || cat == 'eggs') {
+          query = query.where('category', whereIn: ['egg', 'eggs']);
+        } else if (cat == 'nonveg' || cat == 'non-veg') {
+          query = query.where('category', whereIn: ['nonveg', 'non-veg']);
+        } else {
+          query = query.where('category', isEqualTo: cat);
         }
       }
-
+      final snap = await query.get();
+      final list = snap.docs.map((doc) => TokenTransactionModel.fromFirestore(doc)).toList();
       list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
       return list;
     } catch (e) {
@@ -1029,22 +1048,100 @@ class FirestoreRepository {
 
   // User Deletion
 
-  Future<void> deleteUser(String id, UserSession currentUser) async {
-    if (id[0].toLowerCase() == AppConstants.prefixAdmin) {
-      throw const PermissionDeniedException();
+  Future<void> deleteUser(
+    String id,
+    UserSession currentUser, {
+    UserRole? targetRole,
+  }) async {
+    final cleanId = id.trim();
+    if (cleanId.isEmpty) throw const UserNotFoundException('empty');
+
+    UserRole? resolvedRole = targetRole ?? UserRole.fromUsername(cleanId);
+    DocumentReference? targetDocRef;
+
+    if (resolvedRole != null) {
+      final docRef = _db.collection(resolvedRole.firestoreCollection).doc(cleanId);
+      final snap = await docRef.get();
+      if (snap.exists) {
+        targetDocRef = docRef;
+      }
     }
 
-    final targetRole = UserRole.fromUsername(id);
-    if (targetRole == null) throw const UserNotFoundException('unknown');
-    if (!currentUser.role.canManage(targetRole)) {
+    if (targetDocRef == null) {
+      final found = await _findUserDoc(identifier: cleanId);
+      if (found != null) {
+        targetDocRef = found.doc.reference;
+        resolvedRole = found.role;
+      }
+    }
+
+    if (targetDocRef == null || resolvedRole == null) {
+      throw UserNotFoundException(cleanId);
+    }
+
+    if (!currentUser.role.canManage(resolvedRole)) {
       throw const PermissionDeniedException();
     }
 
     try {
-      final ref = _db.collection(targetRole.firestoreCollection).doc(id);
-      final snap = await ref.get();
-      if (!snap.exists) throw UserNotFoundException(id);
-      await ref.delete();
+      // 1. Fetch user doc to obtain email before deleting documents
+      final targetDocSnap = await targetDocRef.get();
+      final targetData = targetDocSnap.data() as Map<String, dynamic>?;
+      final userEmail = (targetData?[AppConstants.fieldEmail] as String?)?.trim() ??
+          '${cleanId.toLowerCase()}@psgtoken.com';
+
+      // 2. Delete Firestore user document
+      await targetDocRef.delete();
+
+      // 3. Delete student purchases & redemptions
+      if (resolvedRole == UserRole.student) {
+        final upperId = cleanId.toUpperCase();
+
+        final purchases = await _db
+            .collection(AppConstants.colPurchases)
+            .where('rollNumber', isEqualTo: upperId)
+            .get();
+        if (purchases.docs.isNotEmpty) {
+          final batchPurchases = _db.batch();
+          for (final doc in purchases.docs) {
+            batchPurchases.delete(doc.reference);
+          }
+          await batchPurchases.commit();
+        }
+
+        final redemptions = await _db
+            .collection(AppConstants.colRedemptions)
+            .where('rollNumber', isEqualTo: upperId)
+            .get();
+        if (redemptions.docs.isNotEmpty) {
+          final batchRedemptions = _db.batch();
+          for (final doc in redemptions.docs) {
+            batchRedemptions.delete(doc.reference);
+          }
+          await batchRedemptions.commit();
+        }
+      }
+
+      // 4. Delete corresponding Firebase Authentication account to prevent orphaned credentials
+      try {
+        final tempAppName = 'deleteAuthApp_${DateTime.now().microsecondsSinceEpoch}';
+        final tempApp = await Firebase.initializeApp(
+          name: tempAppName,
+          options: Firebase.app().options,
+        );
+        try {
+          final tempAuth = FirebaseAuth.instanceFor(app: tempApp);
+          await tempAuth.signInWithEmailAndPassword(
+            email: userEmail,
+            password: AppConstants.defaultPassword,
+          );
+          await tempAuth.currentUser?.delete();
+        } finally {
+          await tempApp.delete();
+        }
+      } catch (authErr) {
+        debugPrint('Firebase Auth deletion notice for $userEmail: $authErr');
+      }
     } on UserNotFoundException {
       rethrow;
     } on PermissionDeniedException {
