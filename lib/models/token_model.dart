@@ -156,3 +156,23 @@ class TokenTransactionModel {
   }
 }
 
+/// Summary statistics for Egg tokens (Purchased, Used/Redeemed, Remaining).
+class EggTokenSummary {
+  final int purchased;
+  final int used;
+  final int remaining;
+
+  const EggTokenSummary({
+    this.purchased = 0,
+    this.used = 0,
+    this.remaining = 0,
+  });
+
+  static const EggTokenSummary empty = EggTokenSummary();
+
+  @override
+  String toString() =>
+      'EggTokenSummary(purchased: $purchased, used: $used, remaining: $remaining)';
+}
+
+

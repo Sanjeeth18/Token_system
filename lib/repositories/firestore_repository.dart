@@ -382,6 +382,10 @@ class FirestoreRepository {
 
         // Non-Veg purchase
         if (selection.wantsNonVeg) {
+          if (!MealDateUtils.isNonVegPurchaseDay(DateTime.now())) {
+            throw const TokenException(
+                TokenErrorType.alreadyUsed, 'Non-Veg tokens can only be purchased on Sunday, Wednesday, and Friday.');
+          }
           final nextMealDate = MealDateUtils.getNextMealDate();
           if (!MealDateUtils.isNonVegAvailable(nextMealDate)) {
             throw const TokenException(
@@ -503,7 +507,7 @@ class FirestoreRepository {
       final studentRef =
           _db.collection(AppConstants.colStudents).doc(roll);
 
-      return await _db.runTransaction((tx) async {
+      final result = await _db.runTransaction((tx) async {
         final snap = await tx.get(studentRef);
         if (!snap.exists) throw UserNotFoundException(roll);
 
@@ -550,6 +554,25 @@ class FirestoreRepository {
 
         return updated;
       });
+
+      // Write redemption log to redemptions collection
+      final now = DateTime.now();
+      final dateStr = DateFormat('dd-MM-yyyy').format(now);
+      final timeStr = DateFormat('hh:mm a').format(now);
+      final normalizedCategory = (type == 'non-veg' || type == 'nonveg')
+          ? 'nonveg'
+          : ((type == 'eggs' || type == 'egg') ? 'egg' : 'veg');
+
+      await _db.collection(AppConstants.colRedemptions).add({
+        'rollNumber': roll,
+        'category': normalizedCategory,
+        'count': count,
+        'date': dateStr,
+        'time': timeStr,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      return result;
     } on TokenException {
       rethrow;
     } on UserNotFoundException {
@@ -565,12 +588,33 @@ class FirestoreRepository {
 
   Future<TokenCounts> getTokenCounts() async {
     try {
-      final snap = await _db
+      final ref = _db
           .collection(AppConstants.colTokens)
-          .doc(AppConstants.docTokenCounts)
-          .get();
+          .doc(AppConstants.docTokenCounts);
+      final snap = await ref.get();
       if (!snap.exists) return TokenCounts.empty;
-      return TokenCounts.fromMap(snap.data()!);
+
+      final data = snap.data()!;
+      final lastResetTs = data['lastVegReset'];
+      DateTime? lastReset;
+      if (lastResetTs is Timestamp) {
+        lastReset = lastResetTs.toDate();
+      }
+
+      final now = DateTime.now();
+      if (lastReset == null || now.difference(lastReset).inHours >= 24) {
+        await ref.set({
+          ...data,
+          AppConstants.fieldVeg: 5000,
+          AppConstants.fieldVegPurchased: 0,
+          'lastVegReset': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+
+        final updatedSnap = await ref.get();
+        return TokenCounts.fromMap(updatedSnap.data()!);
+      }
+
+      return TokenCounts.fromMap(data);
     } catch (e) {
       throw FirestoreException(e.toString());
     }
@@ -578,6 +622,19 @@ class FirestoreRepository {
 
   Future<void> setTokenCount(String type, int count) async {
     try {
+      final now = DateTime.now();
+      if (type == 'veg') {
+        if (!MealDateUtils.canManagerUpdateVeg(now)) {
+          throw const FirestoreException('Veg token pool updates are allowed only before 8:00 AM.');
+        }
+      } else if (type == 'non-veg') {
+        if (!MealDateUtils.canManagerUpdateNonVeg(now)) {
+          throw const FirestoreException(
+            'Non-Veg token pool updates are allowed only on Sunday, Wednesday, and Friday before 8:00 AM.',
+          );
+        }
+      }
+
       final ref = _db
           .collection(AppConstants.colTokens)
           .doc(AppConstants.docTokenCounts);
@@ -597,6 +654,95 @@ class FirestoreRepository {
       }
     } catch (e) {
       throw FirestoreException(e.toString());
+    }
+  }
+
+  // Admin History & Analytics
+
+  Future<List<TokenTransactionModel>> getAllPurchasesHistory({String? category}) async {
+    try {
+      final snap = await _db.collection(AppConstants.colPurchases).get();
+      final list = <TokenTransactionModel>[];
+      final cat = category?.toLowerCase();
+
+      for (final doc in snap.docs) {
+        final item = TokenTransactionModel.fromFirestore(doc);
+        final itemCat = item.category.toLowerCase();
+        if (cat == null || itemCat == cat || (cat == 'nonveg' && itemCat == 'non-veg') || (cat == 'egg' && itemCat == 'eggs')) {
+          list.add(item);
+        }
+      }
+
+      list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      return list;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<TokenTransactionModel>> getAllRedemptionsHistory({String? category}) async {
+    try {
+      var snap = await _db.collection(AppConstants.colRedemptions).get();
+      if (snap.docs.isEmpty) {
+        snap = await _db.collection('Redemptions').get();
+      }
+      final list = <TokenTransactionModel>[];
+      final cat = category?.toLowerCase();
+
+      for (final doc in snap.docs) {
+        final item = TokenTransactionModel.fromFirestore(doc);
+        final itemCat = item.category.toLowerCase();
+        if (cat == null || itemCat == cat || (cat == 'nonveg' && itemCat == 'non-veg') || (cat == 'egg' && itemCat == 'eggs')) {
+          list.add(item);
+        }
+      }
+
+      list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      return list;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<EggTokenSummary> getEggTokenSummary() async {
+    try {
+      int totalPurchased = 0;
+      final purchasesSnap = await _db.collection(AppConstants.colPurchases).get();
+      for (final doc in purchasesSnap.docs) {
+        final data = doc.data();
+        final cat = (data['category'] as String? ?? '').toLowerCase();
+        if (cat == 'egg' || cat == 'eggs') {
+          totalPurchased += (data['count'] as num?)?.toInt() ?? 0;
+        }
+      }
+
+      int totalUsed = 0;
+      var redemptionsSnap = await _db.collection(AppConstants.colRedemptions).get();
+      if (redemptionsSnap.docs.isEmpty) {
+        redemptionsSnap = await _db.collection('Redemptions').get();
+      }
+      for (final doc in redemptionsSnap.docs) {
+        final data = doc.data();
+        final cat = (data['category'] as String? ?? '').toLowerCase();
+        if (cat == 'egg' || cat == 'eggs') {
+          totalUsed += (data['count'] as num?)?.toInt() ?? 0;
+        }
+      }
+
+      int totalRemaining = 0;
+      final studentsSnap = await _db.collection(AppConstants.colStudents).get();
+      for (final doc in studentsSnap.docs) {
+        final data = doc.data();
+        totalRemaining += (data[AppConstants.fieldEggs] as num?)?.toInt() ?? 0;
+      }
+
+      return EggTokenSummary(
+        purchased: totalPurchased,
+        used: totalUsed,
+        remaining: totalRemaining,
+      );
+    } catch (e) {
+      return EggTokenSummary.empty;
     }
   }
 

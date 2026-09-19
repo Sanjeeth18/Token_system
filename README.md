@@ -184,6 +184,7 @@ Copy and apply the following Firestore rules in Firebase Console:
 
 ```javascript
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -208,6 +209,19 @@ service cloud.firestore {
     }
 
     match /Purchases/{id} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /redemptions/{id} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /Redemptions/{id} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Universal wildcard rule for all collections & sub-collections
+    match /{document=**} {
       allow read, write: if request.auth != null;
     }
   }

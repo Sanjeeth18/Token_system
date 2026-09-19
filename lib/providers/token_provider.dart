@@ -100,3 +100,19 @@ final tokenSelectionProvider =
     NotifierProvider<TokenSelectionNotifier, TokenSelection>(
   TokenSelectionNotifier.new,
 );
+
+/// Admin History & Analytics Providers
+final purchasesHistoryProvider =
+    FutureProvider.family<List<TokenTransactionModel>, String?>((ref, category) async {
+  return FirestoreRepository.instance.getAllPurchasesHistory(category: category);
+});
+
+final redemptionsHistoryProvider =
+    FutureProvider.family<List<TokenTransactionModel>, String?>((ref, category) async {
+  return FirestoreRepository.instance.getAllRedemptionsHistory(category: category);
+});
+
+final eggTokenSummaryProvider = FutureProvider<EggTokenSummary>((ref) async {
+  return FirestoreRepository.instance.getEggTokenSummary();
+});
+

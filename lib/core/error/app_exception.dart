@@ -54,3 +54,8 @@ class InvalidQrDataException extends AppException {
   const InvalidQrDataException()
       : super('Invalid QR code. Please scan a valid token QR.');
 }
+
+/// Thrown when a student's DOJ exceeds the allowed limit for their course.
+class StudentValidationException extends AppException {
+  const StudentValidationException(super.message);
+}
