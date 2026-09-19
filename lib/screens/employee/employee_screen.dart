@@ -46,18 +46,45 @@ class _EmployeeScreenState extends ConsumerState<EmployeeScreen> {
     return AppScaffold(
       title: 'Staff Terminal',
       actions: [
-        IconButton(
-          icon: const Icon(Icons.person_rounded, color: AppColors.accent),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ProfileScreen(session: user),
+        if (user.photoUrl != null && user.photoUrl!.trim().isNotEmpty)
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ProfileScreen(session: user),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.accent, width: 1.5),
+                  image: DecorationImage(
+                    image: NetworkImage(user.photoUrl!.trim()),
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
-            );
-          },
-          tooltip: 'Profile',
-        ),
+            ),
+          )
+        else
+          IconButton(
+            icon: const Icon(Icons.person_rounded, color: AppColors.accent),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ProfileScreen(session: user),
+                ),
+              );
+            },
+            tooltip: 'Profile',
+          ),
         IconButton(
           icon: const Icon(Icons.logout_rounded, color: AppColors.textMuted),
           tooltip: 'Sign Out',
@@ -89,24 +116,48 @@ class _EmployeeScreenState extends ConsumerState<EmployeeScreen> {
                 ),
                 child: Column(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.employeeBadge.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                            color:
-                                AppColors.employeeBadge.withValues(alpha: 0.4)),
+                    if (user.photoUrl != null && user.photoUrl!.trim().isNotEmpty)
+                      Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.employeeBadge,
+                            width: 2.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.employeeBadge.withValues(alpha: 0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                          image: DecorationImage(
+                            image: NetworkImage(user.photoUrl!.trim()),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.employeeBadge.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                              color:
+                                  AppColors.employeeBadge.withValues(alpha: 0.4)),
+                        ),
+                        child: const Icon(
+                          Icons.badge_rounded,
+                          color: AppColors.employeeBadge,
+                          size: 40,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.badge_rounded,
-                        color: AppColors.employeeBadge,
-                        size: 40,
-                      ),
-                    ),
                     const SizedBox(height: 16),
                     Text(
-                      widget.session.name,
+                      user.name,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -115,7 +166,7 @@ class _EmployeeScreenState extends ConsumerState<EmployeeScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Staff ID: ${widget.session.id}',
+                      'Staff ID: ${user.id}',
                       style: const TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary,

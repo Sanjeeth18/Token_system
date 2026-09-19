@@ -114,18 +114,45 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
     return AppScaffold(
       title: 'Manager Console',
       actions: [
-        IconButton(
-          icon: const Icon(Icons.person_rounded, color: AppColors.accent),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ProfileScreen(session: user),
+        if (user.photoUrl != null && user.photoUrl!.trim().isNotEmpty)
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ProfileScreen(session: user),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.accent, width: 1.5),
+                  image: DecorationImage(
+                    image: NetworkImage(user.photoUrl!.trim()),
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
-            );
-          },
-          tooltip: 'Profile',
-        ),
+            ),
+          )
+        else
+          IconButton(
+            icon: const Icon(Icons.person_rounded, color: AppColors.accent),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ProfileScreen(session: user),
+                ),
+              );
+            },
+            tooltip: 'Profile',
+          ),
         IconButton(
           icon: const Icon(Icons.logout_rounded, color: AppColors.textMuted),
           tooltip: 'Sign Out',
