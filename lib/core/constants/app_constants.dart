@@ -11,6 +11,7 @@ abstract class AppConstants {
   static const String colAdmins = 'Admins';
   static const String colTokens = 'Tokens';
   static const String colPurchases = 'Purchases';
+  static const String colRedemptions = 'redemptions';
   static const String docTokenCounts = 'Counts';
 
   // Default Credentials & Security
@@ -110,4 +111,27 @@ abstract class AppConstants {
     'Msc Applied Mathematics',
     'MBA',
   ];
+
+  /// Returns the maximum allowed DOJ difference in years based on the course:
+  /// - 5 years for M.Sc. Software Systems, M.Sc. Cyber Security, M.Sc. Data Science, M.Sc. Theoretical Computer Science
+  /// - 2 years for M.Sc. Applied Mathematics, MBA
+  /// - 4 years for all other courses
+  static int getMaxDojYearsForCourse(String course) {
+    final normalized = course
+        .replaceAll('.', '')
+        .toLowerCase()
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+
+    if (normalized == 'msc software systems' ||
+        normalized == 'msc cyber security' ||
+        normalized == 'msc data science' ||
+        normalized == 'msc theoretical computer science') {
+      return 5;
+    } else if (normalized == 'msc applied mathematics' || normalized == 'mba') {
+      return 2;
+    } else {
+      return 4;
+    }
+  }
 }

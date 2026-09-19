@@ -31,13 +31,11 @@ class StudentHomeScreen extends ConsumerStatefulWidget {
 class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
   int _currentTabIndex = 0;
   late final DateTime _nextMealDate;
-  late final bool _isNonVegDay;
 
   @override
   void initState() {
     super.initState();
     _nextMealDate = MealDateUtils.getNextMealDate();
-    _isNonVegDay = MealDateUtils.isNonVegAvailable(_nextMealDate);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(tokenCountsProvider.notifier).refresh();
@@ -291,8 +289,9 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                       final isVegAvailable = vegUnavailableReason == null;
                       final vegSubtext = vegUnavailableReason ?? 'Available';
 
-                      final String? nonVegUnavailableReason = !_isNonVegDay
-                          ? 'Non-Veg meal is not served on this dining schedule.'
+                      final isNonVegPurchaseDay = MealDateUtils.isNonVegPurchaseDay();
+                      final String? nonVegUnavailableReason = !isNonVegPurchaseDay
+                          ? 'Non-Veg tokens can only be purchased on Sunday, Wednesday, and Friday.'
                           : (studentNonVeg > 0
                               ? 'Non-Veg token already purchased.'
                               : (counts.nonVeg <= 0 ? 'Non-Veg tokens are sold out.' : null));

@@ -319,6 +319,7 @@ class ProfileScreen extends ConsumerWidget {
   Future<void> _showChangePasswordDialog(BuildContext context, UserSession user) async {
     final oldPassController = TextEditingController();
     final newPassController = TextEditingController();
+    final confirmPassController = TextEditingController();
     final formKey = GlobalKey<FormState>();
 
     await showDialog(
@@ -328,30 +329,50 @@ class ProfileScreen extends ConsumerWidget {
           backgroundColor: AppColors.surfaceElevated,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Text('Change Password', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
-          content: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AppTextField(
-                  label: 'Current Password',
-                  hint: 'Enter current password',
-                  controller: oldPassController,
-                  isPassword: true,
-                  validator: (val) => val == null || val.isEmpty ? 'Current password required' : null,
-                ),
-                const SizedBox(height: 14),
-                AppTextField(
-                  label: 'New Password',
-                  hint: 'Enter new password',
-                  controller: newPassController,
-                  isPassword: true,
-                  validator: (val) {
-                    if (val == null || val.length < 6) return 'Minimum 6 characters required';
-                    return null;
-                  },
-                ),
-              ],
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppTextField(
+                    label: 'Current Password',
+                    hint: 'Enter current password',
+                    controller: oldPassController,
+                    isPassword: true,
+                    validator: (val) => val == null || val.isEmpty ? 'Current password required' : null,
+                  ),
+                  const SizedBox(height: 14),
+                  AppTextField(
+                    label: 'New Password',
+                    hint: 'Enter new password',
+                    controller: newPassController,
+                    isPassword: true,
+                    validator: (val) {
+                      if (val == null || val.isEmpty) return 'New password required';
+                      if (val.length < 8) return 'Minimum 8 characters required';
+                      if (!RegExp(r'[A-Z]').hasMatch(val)) return 'Must contain at least 1 uppercase letter';
+                      if (!RegExp(r'[a-z]').hasMatch(val)) return 'Must contain at least 1 lowercase letter';
+                      if (!RegExp(r'[0-9!@#$%^&*(),.?":{}|<>]').hasMatch(val)) {
+                        return 'Must contain at least 1 digit or special character';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  AppTextField(
+                    label: 'Confirm New Password',
+                    hint: 'Re-enter new password',
+                    controller: confirmPassController,
+                    isPassword: true,
+                    validator: (val) {
+                      if (val == null || val.isEmpty) return 'Please confirm your new password';
+                      if (val != newPassController.text) return 'Passwords do not match';
+                      return null;
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [
