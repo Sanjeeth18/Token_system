@@ -83,7 +83,11 @@ class _DeleteUserScreenState extends State<DeleteUserScreen> {
     if (!confirmed) return;
 
     try {
-      await FirestoreRepository.instance.deleteUser(user.id, widget.currentUser);
+      await FirestoreRepository.instance.deleteUser(
+        user.id,
+        widget.currentUser,
+        targetRole: user.role,
+      );
       if (!mounted) return;
       AppFeedback.showSnackBar(
         context,

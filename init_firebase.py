@@ -181,7 +181,7 @@ def create_demo_auth_users():
             "role": "admin",
             "doc_id": "A101",
             "email": "sanjeeth653@gmail.com",
-            "password": "Password@1234",
+            "password": "Admin@1234",
             "name": "Sanjeeth (Admin)",
         },
         {
@@ -200,7 +200,7 @@ def create_demo_auth_users():
         },
         {
             "role": "student",
-            "doc_id": "S101",
+            "doc_id": "22pw33",
             "email": "clgworks02@gmail.com",
             "password": "Password@1234",
             "name": "Sanjeeth 4 (Student)",
@@ -292,7 +292,7 @@ def setup_sample_data(demo_accounts):
     # -----------------------------------------------------------------------
     # Students
     # -----------------------------------------------------------------------
-    std_acc = account_map["S101"]
+    std_acc = account_map["22pw33"]
     student_data = {
         "uid": std_acc["uid"],
         "name": "Sanjeeth 4",
@@ -307,8 +307,8 @@ def setup_sample_data(demo_accounts):
         "eggs": 15,
         "createdAt": today_str,
     }
-    db.collection("Students").document("S101").set(student_data)
-    print("   ✓ Collection 'Students' -> Document 'S101' created.")
+    db.collection("Students").document("22pw33").set(student_data)
+    print("   ✓ Collection 'Students' -> Document '22pw33' created.")
 
     # -----------------------------------------------------------------------
     # Tokens (Counts document with 5,000 veg default & lastVegReset timestamp)
@@ -327,7 +327,7 @@ def setup_sample_data(demo_accounts):
     # Purchases (Sample purchase transaction)
     # -----------------------------------------------------------------------
     purchase_sample = {
-        "rollNumber": "S101",
+        "rollNumber": "22pw33",
         "category": "egg",
         "count": 15,
         "date": today_str,
@@ -341,7 +341,7 @@ def setup_sample_data(demo_accounts):
     # Redemptions (Sample redemption transaction)
     # -----------------------------------------------------------------------
     redemption_sample = {
-        "rollNumber": "S101",
+        "rollNumber": "22pw33",
         "category": "egg",
         "count": 5,
         "date": today_str,

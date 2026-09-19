@@ -11,7 +11,7 @@ abstract class AppConstants {
   static const String colAdmins = 'Admins';
   static const String colTokens = 'Tokens';
   static const String colPurchases = 'Purchases';
-  static const String colRedemptions = 'redemptions';
+  static const String colRedemptions = 'Redemptions';
   static const String docTokenCounts = 'Counts';
 
   // Default Credentials & Security

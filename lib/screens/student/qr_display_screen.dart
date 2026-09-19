@@ -25,10 +25,12 @@ class QrDisplayScreen extends StatefulWidget {
 class _QrDisplayScreenState extends State<QrDisplayScreen> {
   int _selectedCount = 1;
   bool _generated = false;
+  late int _generationTimestamp;
 
   @override
   void initState() {
     super.initState();
+    _generationTimestamp = DateTime.now().millisecondsSinceEpoch;
     // For single meal tokens, generate automatically
     if (widget.tokenType != TokenType.eggs) {
       _generated = true;
@@ -56,7 +58,11 @@ class _QrDisplayScreenState extends State<QrDisplayScreen> {
   }
 
   String get _qrPayload {
-    return '${widget.rollNumber} $_typeName $_selectedCount';
+    return '${widget.rollNumber} $_typeName $_selectedCount $_generationTimestamp';
+  }
+
+  String get _qrDisplayLabel {
+    return '${widget.rollNumber} • $_typeName • Qty: $_selectedCount';
   }
 
   @override
@@ -180,7 +186,10 @@ class _QrDisplayScreenState extends State<QrDisplayScreen> {
                       AppPrimaryButton(
                         label: 'Generate QR',
                         icon: Icons.qr_code_rounded,
-                        onPressed: () => setState(() => _generated = true),
+                        onPressed: () => setState(() {
+                          _generationTimestamp = DateTime.now().millisecondsSinceEpoch;
+                          _generated = true;
+                        }),
                       ),
                     ],
                   ),
@@ -213,12 +222,12 @@ class _QrDisplayScreenState extends State<QrDisplayScreen> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        _qrPayload,
+                        _qrDisplayLabel,
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: Colors.black87,
-                          letterSpacing: 1,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ],

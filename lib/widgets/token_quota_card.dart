@@ -47,7 +47,7 @@ class TokenQuotaCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           const Text(
-            'Token pool updates are allowed only before 8:00 AM.',
+            'Token pool updates are allowed only before 6:00 AM.',
             style: TextStyle(
               fontSize: 12,
               color: AppColors.textSecondary,
@@ -69,7 +69,7 @@ class TokenQuotaCard extends StatelessWidget {
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Quota updates closed for today. Manager updates are allowed only before 8:00 AM (and on Sun, Wed, Fri for Non-Veg).',
+                      'Quota updates closed for today. Manager updates are allowed only before 6:00 AM.',
                       style: TextStyle(
                         fontSize: 13,
                         color: AppColors.textPrimary,
@@ -81,7 +81,7 @@ class TokenQuotaCard extends StatelessWidget {
               ),
             ),
           ] else ...[
-            // Veg Quota Row (only displayed before 8:00 AM)
+            // Veg Quota Row (only displayed before 6:00 AM)
             if (canUpdateVeg) ...[
               Row(
                 children: [
@@ -129,7 +129,7 @@ class TokenQuotaCard extends StatelessWidget {
 
             if (canUpdateVeg && canUpdateNonVeg) const SizedBox(height: 16),
 
-            // Non-Veg Quota Row (only displayed Sun, Wed, Fri before 8:00 AM)
+            // Non-Veg Quota Row (only displayed before 6:00 AM)
             if (canUpdateNonVeg) ...[
               Row(
                 children: [
@@ -172,18 +172,6 @@ class TokenQuotaCard extends StatelessWidget {
                     ),
                   ),
                 ],
-              ),
-            ],
-
-            if (!canUpdateNonVeg && canUpdateVeg) ...[
-              const SizedBox(height: 12),
-              const Text(
-                'Non-Veg quota updates allowed only on Sun, Wed, Fri before 8:00 AM.',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontStyle: FontStyle.italic,
-                  color: AppColors.textMuted,
-                ),
               ),
             ],
           ],

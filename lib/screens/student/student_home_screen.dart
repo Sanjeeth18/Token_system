@@ -30,12 +30,10 @@ class StudentHomeScreen extends ConsumerStatefulWidget {
 
 class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
   int _currentTabIndex = 0;
-  late final DateTime _nextMealDate;
 
   @override
   void initState() {
     super.initState();
-    _nextMealDate = MealDateUtils.getNextMealDate();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(tokenCountsProvider.notifier).refresh();
@@ -66,6 +64,8 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
     if (!mounted) return;
 
     if (success) {
+      ref.invalidate(studentPurchasesHistoryProvider(widget.session.id));
+      ref.read(studentTokensProvider(widget.session.id).notifier).refresh(widget.session.id);
       AppFeedback.showSnackBar(
         context,
         'Meal tokens booked successfully!',
@@ -157,30 +157,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                         ),
                       ),
                     ),
-                    extraInfo: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.event_available_rounded,
-                              size: 16, color: AppColors.studentBadge),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Next Dining Session: ${MealDateUtils.formatDate(_nextMealDate)}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+ ),
                   const SizedBox(height: 16),
 
                   // Quick Action Card
@@ -212,11 +189,11 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                             child: const Icon(Icons.account_balance_wallet_rounded, color: AppColors.vegGreen, size: 26),
                           ),
                           const SizedBox(width: 16),
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   'My Active Tokens',
                                   style: TextStyle(
                                     fontSize: 15,
@@ -224,10 +201,26 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                     color: AppColors.textPrimary,
                                   ),
                                 ),
-                                SizedBox(height: 2),
-                                Text(
+                                const SizedBox(height: 2),
+                                const Text(
                                   'Show active pass QR to redeem meal',
                                   style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                ),
+                                studentTokensAsync.when(
+                                  data: (tokens) => Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Wrap(
+                                      spacing: 6,
+                                      runSpacing: 4,
+                                      children: [
+                                        _buildTokenPill('Veg', tokens.veg, AppColors.vegGreen),
+                                        _buildTokenPill('Non-Veg', tokens.nonVeg, AppColors.nonVegRed),
+                                        _buildTokenPill('Eggs', tokens.eggs, AppColors.eggOrange),
+                                      ],
+                                    ),
+                                  ),
+                                  loading: () => const SizedBox.shrink(),
+                                  error: (_, __) => const SizedBox.shrink(),
                                 ),
                               ],
                             ),
@@ -281,17 +274,22 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                           studentTokensAsync.valueOrNull?.veg ?? 0;
                       final studentNonVeg =
                           studentTokensAsync.valueOrNull?.nonVeg ?? 0;
+                      final studentEggs =
+                          studentTokensAsync.valueOrNull?.eggs ?? 0;
 
-                      final String? vegUnavailableReason = studentVeg > 0
-                          ? 'Veg token already purchased.'
-                          : (counts.veg <= 0 ? 'Veg tokens are sold out.' : null);
+                      final isWindowOpen = MealDateUtils.isStudentPurchaseWindowOpen();
+
+                      final String? vegUnavailableReason = !isWindowOpen
+                          ? 'Token purchases open after 6:00 AM.'
+                          : (studentVeg > 0
+                              ? 'Veg token already purchased.'
+                              : (counts.veg <= 0 ? 'Veg tokens are sold out.' : null));
 
                       final isVegAvailable = vegUnavailableReason == null;
                       final vegSubtext = vegUnavailableReason ?? 'Available';
 
-                      final isNonVegPurchaseDay = MealDateUtils.isNonVegPurchaseDay();
-                      final String? nonVegUnavailableReason = !isNonVegPurchaseDay
-                          ? 'Non-Veg tokens can only be purchased on Sunday, Wednesday, and Friday.'
+                      final String? nonVegUnavailableReason = !isWindowOpen
+                          ? 'Token purchases open after 6:00 AM.'
                           : (studentNonVeg > 0
                               ? 'Non-Veg token already purchased.'
                               : (counts.nonVeg <= 0 ? 'Non-Veg tokens are sold out.' : null));
@@ -336,17 +334,17 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                             margin: const EdgeInsets.symmetric(vertical: 8),
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: selection.eggCount > 0
+                              color: selection.eggCount > 0 || studentEggs > 0
                                   ? AppColors.surfaceElevated
                                   : AppColors.surface,
                               borderRadius: BorderRadius.circular(18),
                               border: Border.all(
-                                color: selection.eggCount > 0
+                                color: selection.eggCount > 0 || studentEggs > 0
                                     ? AppColors.eggYellow
                                     : AppColors.cardBorder,
-                                width: selection.eggCount > 0 ? 1.8 : 1,
+                                width: selection.eggCount > 0 || studentEggs > 0 ? 1.8 : 1,
                               ),
-                              boxShadow: selection.eggCount > 0
+                              boxShadow: selection.eggCount > 0 || studentEggs > 0
                                   ? [
                                       BoxShadow(
                                         color: AppColors.eggYellow.withValues(alpha: 0.25),
@@ -378,11 +376,11 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                       color: AppColors.eggYellow, size: 28),
                                 ),
                                 const SizedBox(width: 16),
-                                const Expanded(
+                                Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Row(
+                                      const Row(
                                         children: [
                                           Text(
                                             'Egg Tokens',
@@ -395,51 +393,80 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                           SizedBox(width: 8),
                                         ],
                                       ),
-                                      SizedBox(height: 4),
+                                      const SizedBox(height: 4),
                                       Text(
-                                        'Add in batches of 15 eggs',
+                                        studentEggs > 0
+                                            ? 'Egg tokens active ($studentEggs in wallet)'
+                                            : (!isWindowOpen
+                                                ? 'Token purchases open after 6:00 AM.'
+                                                : 'Add in batches of 15 eggs'),
                                         style: TextStyle(
                                           fontSize: 13,
-                                          color: AppColors.textSecondary,
+                                          color: studentEggs > 0
+                                              ? AppColors.eggYellow
+                                              : AppColors.textSecondary,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      onPressed: selection.eggCount > 0
-                                          ? () => ref
-                                              .read(tokenSelectionProvider.notifier)
-                                              .decrementEggs()
-                                          : null,
-                                      icon: const Icon(
-                                        Icons.remove_circle_outline_rounded,
-                                        size: 26,
+                                if (studentEggs > 0)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.eggYellow.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: AppColors.eggYellow.withValues(alpha: 0.4),
                                       ),
-                                      color: AppColors.eggYellow,
                                     ),
-                                    Text(
-                                      '${selection.eggCount}',
+                                    child: Text(
+                                      'Active ($studentEggs)',
                                       style: const TextStyle(
-                                        fontSize: 18,
+                                        fontSize: 12,
                                         fontWeight: FontWeight.w700,
-                                        color: AppColors.textPrimary,
+                                        color: AppColors.eggYellow,
                                       ),
                                     ),
-                                    IconButton(
-                                      onPressed: () => ref
-                                          .read(tokenSelectionProvider.notifier)
-                                          .incrementEggs(),
-                                      icon: const Icon(
-                                        Icons.add_circle_outline_rounded,
-                                        size: 26,
+                                  )
+                                else
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        onPressed: selection.eggCount > 0
+                                            ? () => ref
+                                                .read(tokenSelectionProvider.notifier)
+                                                .decrementEggs()
+                                            : null,
+                                        icon: const Icon(
+                                          Icons.remove_circle_outline_rounded,
+                                          size: 26,
+                                        ),
+                                        color: AppColors.eggYellow,
                                       ),
-                                      color: AppColors.eggYellow,
-                                    ),
-                                  ],
-                                ),
+                                      Text(
+                                        '${selection.eggCount}',
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: isWindowOpen
+                                            ? () => ref
+                                                .read(tokenSelectionProvider.notifier)
+                                                .incrementEggs()
+                                            : null,
+                                        icon: const Icon(
+                                          Icons.add_circle_outline_rounded,
+                                          size: 26,
+                                        ),
+                                        color: AppColors.eggYellow,
+                                      ),
+                                    ],
+                                  ),
                               ],
                             ),
                           ),
@@ -460,6 +487,38 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                   const SizedBox(height: 20),
                 ],
               ),
+      ),
+    );
+  }
+
+  Widget _buildTokenPill(String label, int count, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '$label: ',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+          Text(
+            '$count',
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
+          ),
+        ],
       ),
     );
   }

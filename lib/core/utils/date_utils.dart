@@ -64,32 +64,28 @@ abstract class MealDateUtils {
   /// Alias for formatShort()
   static String formatDate(DateTime date) => formatShort(date);
 
-  /// Checks if non-veg is served on the given meal date.
-  /// Standard hostel schedule serves non-veg on Sundays, Wednesdays, and Fridays.
-  static bool isNonVegAvailable(DateTime date) {
-    return date.weekday == DateTime.sunday ||
-        date.weekday == DateTime.wednesday ||
-        date.weekday == DateTime.friday;
-  }
+  /// Checks if non-veg is served on the given meal date (available every day).
+  static bool isNonVegAvailable(DateTime date) => true;
 
-  /// Checks if today (or specified time) is a Non-Veg purchase day (Sunday, Wednesday, Friday).
-  static bool isNonVegPurchaseDay([DateTime? now]) {
+  /// Checks if today is a Non-Veg purchase day (available every day).
+  static bool isNonVegPurchaseDay([DateTime? now]) => true;
+
+  /// Checks if the student purchase window is open (after 6:00 AM each day).
+  static bool isStudentPurchaseWindowOpen([DateTime? now]) {
     final target = now ?? DateTime.now();
-    return target.weekday == DateTime.sunday ||
-        target.weekday == DateTime.wednesday ||
-        target.weekday == DateTime.friday;
+    return target.hour >= 6;
   }
 
-  /// Checks if a manager is allowed to update Veg token counts (only before 8:00 AM).
+  /// Checks if a manager is allowed to update Veg token counts (only until 6:00 AM).
   static bool canManagerUpdateVeg([DateTime? now]) {
     final target = now ?? DateTime.now();
-    return target.hour < 8;
+    return target.hour < 6;
   }
 
-  /// Checks if a manager is allowed to update Non-Veg token counts (Sunday, Wednesday, Friday before 8:00 AM).
+  /// Checks if a manager is allowed to update Non-Veg token counts (only until 6:00 AM).
   static bool canManagerUpdateNonVeg([DateTime? now]) {
     final target = now ?? DateTime.now();
-    return isNonVegPurchaseDay(target) && target.hour < 8;
+    return target.hour < 6;
   }
 
   /// Parses a Date of Joining string in ISO, dd-MM-yyyy, or year format.

@@ -101,6 +101,12 @@ final tokenSelectionProvider =
   TokenSelectionNotifier.new,
 );
 
+/// Student Purchase History Provider family by roll number.
+final studentPurchasesHistoryProvider =
+    FutureProvider.family<List<TokenTransactionModel>, String>((ref, roll) async {
+  return FirestoreRepository.instance.getStudentTransactionHistory(roll);
+});
+
 /// Admin History & Analytics Providers
 final purchasesHistoryProvider =
     FutureProvider.family<List<TokenTransactionModel>, String?>((ref, category) async {

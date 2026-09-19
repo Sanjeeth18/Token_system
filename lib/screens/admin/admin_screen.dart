@@ -89,11 +89,6 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
           tooltip: 'Profile',
         ),
         IconButton(
-          icon: const Icon(Icons.refresh_rounded, color: AppColors.accent),
-          onPressed: () => ref.read(tokenCountsProvider.notifier).refresh(),
-          tooltip: 'Refresh Stats',
-        ),
-        IconButton(
           icon: const Icon(Icons.logout_rounded, color: AppColors.textMuted),
           tooltip: 'Sign Out',
           onPressed: _handleLogout,
