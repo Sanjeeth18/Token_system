@@ -94,7 +94,6 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
       message: 'Processing token purchase...',
       child: AppScaffold(
         title: 'Mess Portal',
-        userRole: UserRole.student,
         actions: [
           IconButton(
             icon: const Icon(Icons.person_rounded, color: AppColors.accent),

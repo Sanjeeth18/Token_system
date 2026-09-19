@@ -60,7 +60,6 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
 
     return AppScaffold(
       title: 'Admin Console',
-      userRole: user.role,
       actions: [
         IconButton(
           icon: const Icon(Icons.people_rounded, color: AppColors.accentLight),

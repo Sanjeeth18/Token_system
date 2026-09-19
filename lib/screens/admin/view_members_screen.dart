@@ -59,7 +59,6 @@ class _ViewMembersScreenState extends State<ViewMembersScreen>
   Widget build(BuildContext context) {
     return AppScaffold(
       title: 'System Members',
-      userRole: widget.currentUser.role,
       showBackButton: true,
       body: Column(
         children: [

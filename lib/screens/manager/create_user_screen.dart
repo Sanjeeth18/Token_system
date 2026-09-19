@@ -386,7 +386,6 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
       child: AppScaffold(
         title: 'Add Member',
         showBackButton: true,
-        userRole: widget.currentUser.role,
         body: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Form(

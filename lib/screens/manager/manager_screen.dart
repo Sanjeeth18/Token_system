@@ -113,7 +113,6 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
 
     return AppScaffold(
       title: 'Manager Console',
-      userRole: user.role,
       actions: [
         IconButton(
           icon: const Icon(Icons.person_rounded, color: AppColors.accent),

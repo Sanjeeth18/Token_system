@@ -196,7 +196,7 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                     subtitle: tokens.veg > 0
                         ? 'Valid for Veg Canteen'
                         : 'There are no available tokens',
-                    availableCount: tokens.veg,
+                    count: tokens.veg,
                     icon: Icons.eco_rounded,
                     color: AppColors.vegGreen,
                     onTap: () => _navigateToQr(TokenType.veg, tokens.veg),
@@ -207,7 +207,7 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                     subtitle: tokens.nonVeg > 0
                         ? 'Valid for Non-Veg Canteen'
                         : 'There are no available tokens',
-                    availableCount: tokens.nonVeg,
+                    count: tokens.nonVeg,
                     icon: Icons.restaurant_rounded,
                     color: AppColors.nonVegRed,
                     onTap: () => _navigateToQr(TokenType.nonVeg, tokens.nonVeg),
@@ -218,7 +218,7 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                     subtitle: tokens.eggs > 0
                         ? 'Valid for Egg counter'
                         : 'There are no available tokens',
-                    availableCount: tokens.eggs,
+                    count: tokens.eggs,
                     icon: Icons.egg_rounded,
                     color: AppColors.eggOrange,
                     onTap: () => _navigateToQr(TokenType.eggs, tokens.eggs),

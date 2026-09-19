@@ -182,7 +182,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       child: AppScaffold(
         title: 'Edit Profile',
         showBackButton: true,
-        userRole: widget.session.role,
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Form(

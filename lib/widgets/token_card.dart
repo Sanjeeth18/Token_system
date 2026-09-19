@@ -136,10 +136,8 @@ class TokenWalletCard extends StatelessWidget {
   final int count;
   final IconData icon;
   final Color color;
-  final VoidCallback? onShowQr;
   final String subtitle;
   final VoidCallback? onTap;
-  final int? availableCount;
 
   const TokenWalletCard({
     super.key,
@@ -147,16 +145,13 @@ class TokenWalletCard extends StatelessWidget {
     this.count = 0,
     required this.icon,
     required this.color,
-    this.onShowQr,
     this.subtitle = '',
     this.onTap,
-    this.availableCount,
   });
 
   @override
   Widget build(BuildContext context) {
-    final effectiveCount = availableCount ?? count;
-    final bool hasToken = effectiveCount > 0;
+    final bool hasToken = count > 0;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -179,7 +174,7 @@ class TokenWalletCard extends StatelessWidget {
             : [],
       ),
       child: InkWell(
-        onTap: hasToken ? (onTap ?? onShowQr) : null,
+        onTap: hasToken ? onTap : null,
         borderRadius: BorderRadius.circular(18),
         child: Row(
           children: [
@@ -210,7 +205,7 @@ class TokenWalletCard extends StatelessWidget {
                     subtitle.isNotEmpty
                         ? subtitle
                         : (hasToken
-                            ? 'Active Pool: $effectiveCount'
+                            ? 'Active Pool: $count'
                             : 'No active tokens'),
                     style: TextStyle(
                       fontSize: 13,
@@ -225,7 +220,7 @@ class TokenWalletCard extends StatelessWidget {
             ),
             if (hasToken)
               ElevatedButton.icon(
-                onPressed: onTap ?? onShowQr,
+                onPressed: onTap,
                 icon: const Icon(Icons.qr_code_rounded, size: 18),
                 label: const Text('Show QR'),
                 style: ElevatedButton.styleFrom(

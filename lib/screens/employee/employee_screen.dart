@@ -45,7 +45,6 @@ class _EmployeeScreenState extends ConsumerState<EmployeeScreen> {
 
     return AppScaffold(
       title: 'Staff Terminal',
-      userRole: UserRole.employee,
       actions: [
         IconButton(
           icon: const Icon(Icons.person_rounded, color: AppColors.accent),

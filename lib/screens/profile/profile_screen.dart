@@ -28,7 +28,6 @@ class ProfileScreen extends ConsumerWidget {
     return AppScaffold(
       title: 'User Profile',
       showBackButton: true,
-      userRole: user.role,
       actions: [
         PopupMenuButton<String>(
           icon: const Icon(Icons.more_vert_rounded, color: AppColors.textPrimary),

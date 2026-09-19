@@ -115,7 +115,6 @@ class _DeleteUserScreenState extends State<DeleteUserScreen> {
     return AppScaffold(
       title: 'Delete Member Account',
       showBackButton: true,
-      userRole: widget.currentUser.role,
       body: Column(
         children: [
           // Danger Warning Banner & Search Header

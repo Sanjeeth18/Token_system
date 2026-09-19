@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
-import '../models/user_model.dart';
 
 /// Reusable application scaffold providing standard dark gradient background,
 /// styled app bar with role badge, and responsive padding.
 class AppScaffold extends StatelessWidget {
   final String? title;
   final Widget body;
-  final UserRole? userRole;
   final List<Widget>? actions;
   final Widget? bottomNavigationBar;
   final Widget? floatingActionButton;
@@ -20,7 +18,6 @@ class AppScaffold extends StatelessWidget {
     super.key,
     this.title,
     required this.body,
-    this.userRole,
     this.actions,
     this.bottomNavigationBar,
     this.floatingActionButton,
