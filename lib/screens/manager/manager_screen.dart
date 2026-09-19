@@ -190,14 +190,12 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
                       value: '${counts.veg}',
                       icon: Icons.eco_rounded,
                       color: AppColors.vegGreen,
-                      subtitle: '${counts.vegPurchased} booked today',
                     ),
                     TokenStatCard(
                       title: 'Non-Veg Available',
                       value: '${counts.nonVeg}',
                       icon: Icons.restaurant_rounded,
                       color: AppColors.nonVegRed,
-                      subtitle: '${counts.nonVegPurchased} booked today',
                     ),
                     TokenStatCard(
                       title: 'Veg Booked',

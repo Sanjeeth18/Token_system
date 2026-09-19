@@ -22,6 +22,7 @@ class TokenWalletScreen extends ConsumerStatefulWidget {
 
 class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
   bool _showAllRecords = false;
+  int _selectedLogType = 0; // 0 = Purchased Log, 1 = Used / Redeemed Log
 
   Future<void> _navigateToQr(TokenType tokenType, int availableCount) async {
     await Navigator.push(
@@ -37,10 +38,17 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
     if (mounted) {
       ref.read(studentTokensProvider(widget.rollNumber).notifier).refresh(widget.rollNumber);
       ref.invalidate(studentPurchasesHistoryProvider(widget.rollNumber));
+      ref.invalidate(studentRedemptionsHistoryProvider(widget.rollNumber));
     }
   }
 
-  void _showCategoryHistory(String categoryTitle, String categoryCode, Color color, List<TokenTransactionModel> history) {
+  void _showCategoryHistory({
+    required String categoryTitle,
+    required String categoryCode,
+    required Color color,
+    required List<TokenTransactionModel> history,
+    required bool isRedemption,
+  }) {
     final filtered = history.where((t) {
       final cat = t.category.toLowerCase();
       if (categoryCode == 'veg') return cat == 'veg';
@@ -48,6 +56,8 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
       if (categoryCode == 'egg') return cat == 'egg' || cat == 'eggs';
       return false;
     }).toList();
+
+    final typeLabel = isRedemption ? 'Usage / Redemption' : 'Purchase';
 
     showModalBottomSheet(
       context: context,
@@ -66,9 +76,9 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '$categoryTitle History',
+                    '$categoryTitle $typeLabel History',
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
@@ -86,7 +96,7 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 30),
                       child: Center(
                         child: Text(
-                          'No $categoryTitle purchase history found.',
+                          'No $categoryTitle ${typeLabel.toLowerCase()} records found.',
                           style: const TextStyle(color: AppColors.textMuted),
                         ),
                       ),
@@ -96,7 +106,10 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                         shrinkWrap: true,
                         itemCount: filtered.length,
                         itemBuilder: (context, index) {
-                          return PurchaseRecordTile(item: filtered[index]);
+                          return PurchaseRecordTile(
+                            item: filtered[index],
+                            isRedemption: isRedemption,
+                          );
                         },
                       ),
                     ),
@@ -110,7 +123,11 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
   @override
   Widget build(BuildContext context) {
     final tokensAsync = ref.watch(studentTokensProvider(widget.rollNumber));
-    final historyAsync = ref.watch(studentPurchasesHistoryProvider(widget.rollNumber));
+    final purchasesAsync = ref.watch(studentPurchasesHistoryProvider(widget.rollNumber));
+    final redemptionsAsync = ref.watch(studentRedemptionsHistoryProvider(widget.rollNumber));
+
+    final isRedemptionLog = _selectedLogType == 1;
+    final historyAsync = isRedemptionLog ? redemptionsAsync : purchasesAsync;
     final history = historyAsync.valueOrNull ?? [];
 
     final vegCount = history.where((t) => t.category.toLowerCase() == 'veg').length;
@@ -127,6 +144,7 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
       onRefresh: () async {
         await ref.read(studentTokensProvider(widget.rollNumber).notifier).refresh(widget.rollNumber);
         ref.invalidate(studentPurchasesHistoryProvider(widget.rollNumber));
+        ref.invalidate(studentRedemptionsHistoryProvider(widget.rollNumber));
       },
       color: AppColors.accent,
       backgroundColor: AppColors.surfaceElevated,
@@ -212,9 +230,9 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
 
           const SizedBox(height: 24),
 
-          // Categorized Purchase History Section
+          // Transaction History Header & Log Switcher
           const Text(
-            'Purchase History by Category',
+            'Token Activity & Transaction History',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -223,13 +241,78 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
           ),
           const SizedBox(height: 6),
           const Text(
-            'Tap a category to view detailed transactions with date & time.',
+            'Switch between Purchased tokens and Used/Redeemed token transactions.',
             style: TextStyle(
               fontSize: 12,
               color: AppColors.textMuted,
             ),
           ),
           const SizedBox(height: 14),
+
+          // Log Type Segmented Switcher
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.surfaceElevated,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () => setState(() => _selectedLogType = 0),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _selectedLogType == 0
+                            ? AppColors.accent
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'Purchased History',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: _selectedLogType == 0
+                              ? Colors.white
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => setState(() => _selectedLogType = 1),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _selectedLogType == 1
+                            ? AppColors.accentLight
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'Used / Redeemed History',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: _selectedLogType == 1
+                              ? Colors.white
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
 
           if (historyAsync.isLoading && history.isEmpty)
             const Center(
@@ -243,35 +326,53 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
               children: [
                 CategoryHistoryCard(
                   title: 'Veg Meal History',
-                  subtitle: '$vegCount transaction(s) recorded',
+                  subtitle: '$vegCount ${isRedemptionLog ? 'used' : 'purchased'} transaction(s)',
                   icon: Icons.eco_rounded,
                   color: AppColors.vegGreen,
-                  onTap: () => _showCategoryHistory('Veg Meal', 'veg', AppColors.vegGreen, history),
+                  onTap: () => _showCategoryHistory(
+                    categoryTitle: 'Veg Meal',
+                    categoryCode: 'veg',
+                    color: AppColors.vegGreen,
+                    history: history,
+                    isRedemption: isRedemptionLog,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 CategoryHistoryCard(
                   title: 'Non-Veg Meal History',
-                  subtitle: '$nonVegCount transaction(s) recorded',
+                  subtitle: '$nonVegCount ${isRedemptionLog ? 'used' : 'purchased'} transaction(s)',
                   icon: Icons.restaurant_rounded,
                   color: AppColors.nonVegRed,
-                  onTap: () => _showCategoryHistory('Non-Veg Meal', 'nonveg', AppColors.nonVegRed, history),
+                  onTap: () => _showCategoryHistory(
+                    categoryTitle: 'Non-Veg Meal',
+                    categoryCode: 'nonveg',
+                    color: AppColors.nonVegRed,
+                    history: history,
+                    isRedemption: isRedemptionLog,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 CategoryHistoryCard(
                   title: 'Eggs History',
-                  subtitle: '$eggCount transaction(s) recorded',
+                  subtitle: '$eggCount ${isRedemptionLog ? 'used' : 'purchased'} transaction(s)',
                   icon: Icons.egg_rounded,
                   color: AppColors.eggOrange,
-                  onTap: () => _showCategoryHistory('Eggs', 'egg', AppColors.eggOrange, history),
+                  onTap: () => _showCategoryHistory(
+                    categoryTitle: 'Eggs',
+                    categoryCode: 'egg',
+                    color: AppColors.eggOrange,
+                    history: history,
+                    isRedemption: isRedemptionLog,
+                  ),
                 ),
                 if (history.isNotEmpty) ...[
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'All Purchased Records',
-                        style: TextStyle(
+                      Text(
+                        isRedemptionLog ? 'All Used / Redeemed Records' : 'All Purchased Records',
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
@@ -305,10 +406,26 @@ class _TokenWalletScreenState extends ConsumerState<TokenWalletScreen> {
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: displayedHistory.length,
                         itemBuilder: (context, index) {
-                          return PurchaseRecordTile(item: displayedHistory[index]);
+                          return PurchaseRecordTile(
+                            item: displayedHistory[index],
+                            isRedemption: isRedemptionLog,
+                          );
                         },
                       );
                     },
+                  ),
+                ],
+                if (history.isEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Center(
+                      child: Text(
+                        isRedemptionLog
+                            ? 'No used/redeemed token records found yet.'
+                            : 'No purchased token records found yet.',
+                        style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                      ),
+                    ),
                   ),
                 ],
               ],

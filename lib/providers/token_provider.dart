@@ -107,6 +107,12 @@ final studentPurchasesHistoryProvider =
   return FirestoreRepository.instance.getStudentTransactionHistory(roll);
 });
 
+/// Student Redemption (Used Tokens) History Provider family by roll number.
+final studentRedemptionsHistoryProvider =
+    FutureProvider.family<List<TokenTransactionModel>, String>((ref, roll) async {
+  return FirestoreRepository.instance.getStudentRedemptionHistory(roll);
+});
+
 /// Admin History & Analytics Providers
 final purchasesHistoryProvider =
     FutureProvider.family<List<TokenTransactionModel>, String?>((ref, category) async {

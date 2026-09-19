@@ -486,6 +486,22 @@ class FirestoreRepository {
     }
   }
 
+  /// Fetches detailed redemption (used token) transaction history for a student.
+  Future<List<TokenTransactionModel>> getStudentRedemptionHistory(String roll) async {
+    try {
+      final targetRoll = roll.trim().toUpperCase();
+      final snap = await _db
+          .collection(AppConstants.colRedemptions)
+          .where('rollNumber', isEqualTo: targetRoll)
+          .get();
+      final list = snap.docs.map((doc) => TokenTransactionModel.fromFirestore(doc)).toList();
+      list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      return list;
+    } catch (e) {
+      return [];
+    }
+  }
+
   // QR Redemption (Employee Scanner)
 
   Future<StudentTokens> redeemToken(String qrData) async {

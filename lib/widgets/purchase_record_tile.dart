@@ -5,10 +5,12 @@ import '../models/token_model.dart';
 /// Reusable tile component for displaying an individual token purchase record.
 class PurchaseRecordTile extends StatelessWidget {
   final TokenTransactionModel item;
+  final bool isRedemption;
 
   const PurchaseRecordTile({
     super.key,
     required this.item,
+    this.isRedemption = false,
   });
 
   @override
@@ -34,6 +36,9 @@ class PurchaseRecordTile extends StatelessWidget {
         : isNonVeg
             ? 'Non-Veg Meal'
             : 'Egg Token';
+
+    final badgeColor = isRedemption ? AppColors.accentLight : color;
+    final badgeLabel = isRedemption ? 'REDEEMED' : 'PURCHASED';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
@@ -65,15 +70,15 @@ class PurchaseRecordTile extends StatelessWidget {
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.15),
+            color: badgeColor.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
-            'PURCHASED',
+            badgeLabel,
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: color,
+              color: badgeColor,
             ),
           ),
         ),

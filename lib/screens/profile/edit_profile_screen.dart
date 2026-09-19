@@ -75,7 +75,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
             uiSettings: [
               AndroidUiSettings(
-                toolbarTitle: 'Crop Circular Profile Picture',
+                toolbarTitle: 'Crop Image',
                 toolbarColor: AppColors.surfaceElevated,
                 toolbarWidgetColor: Colors.white,
                 statusBarLight: false,
@@ -85,7 +85,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 cropStyle: CropStyle.circle,
               ),
               IOSUiSettings(
-                title: 'Crop Circular Profile Picture',
+                title: 'Crop Image',
                 cropStyle: CropStyle.circle,
                 aspectRatioLockEnabled: true,
                 resetButtonHidden: false,
