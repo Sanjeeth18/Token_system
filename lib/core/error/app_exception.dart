@@ -40,7 +40,7 @@ enum TokenErrorType { alreadyUsed, soldOut, notFound, insufficientCount }
 /// Thrown for generic Firestore or network errors.
 class FirestoreException extends AppException {
   const FirestoreException([String? details])
-      : super('A database error occurred. Please try again.', details);
+      : super('Unable to complete the operation. Please check your connection and try again.', details);
 }
 
 /// Thrown when an operation is forbidden for the current role.

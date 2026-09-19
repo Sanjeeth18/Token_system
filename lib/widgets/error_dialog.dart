@@ -3,6 +3,44 @@ import '../core/theme/app_colors.dart';
 
 /// Helper methods for presenting toasts, snackbars, and dialogs.
 abstract class AppFeedback {
+  /// Sanitizes any raw exception or error object into a clean, professional user message.
+  /// Detailed technical details are logged via [debugPrint] for developer debugging.
+  static String sanitizeErrorMessage(Object error) {
+    debugPrint('[APP_ERROR_LOG]: $error');
+    final rawStr = error.toString();
+    if (rawStr.contains('user-not-found') ||
+        rawStr.contains('wrong-password') ||
+        rawStr.contains('invalid-credential')) {
+      return 'Invalid username or password. Please try again.';
+    }
+    if (rawStr.contains('network-request-failed') ||
+        rawStr.contains('SocketException')) {
+      return 'Network connection issue. Please check your internet connection and try again.';
+    }
+    if (rawStr.contains('permission-denied') ||
+        rawStr.contains('PermissionDenied')) {
+      return 'You do not have permission to perform this action.';
+    }
+    if (rawStr.contains('too-many-requests')) {
+      return 'Too many attempts. Please try again later.';
+    }
+    var cleaned = rawStr
+        .replaceAll(RegExp(r'^Exception:\s*'), '')
+        .replaceAll(RegExp(r'^AppException:\s*'), '')
+        .replaceAll(RegExp(r'\[firebase_auth/[^\]]+\]\s*'), '');
+
+    if (cleaned.toLowerCase().contains('database error') ||
+        cleaned.toLowerCase().contains('firebase error') ||
+        cleaned.toLowerCase().contains('firestore') ||
+        cleaned.contains('FormatException')) {
+      return 'Unable to complete the operation. Please try again.';
+    }
+
+    return cleaned.isNotEmpty
+        ? cleaned
+        : 'An unexpected error occurred. Please try again.';
+  }
+
   /// Shows a styled SnackBar with icon.
   static void showSnackBar(
     BuildContext context,
@@ -10,6 +48,7 @@ abstract class AppFeedback {
     bool isError = false,
     Duration duration = const Duration(seconds: 3),
   }) {
+    final displayMessage = isError ? sanitizeErrorMessage(message) : message;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -23,7 +62,7 @@ abstract class AppFeedback {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                message,
+                displayMessage,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 14,

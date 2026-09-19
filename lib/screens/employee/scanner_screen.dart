@@ -4,6 +4,7 @@ import '../../core/error/app_exception.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/token_model.dart';
 import '../../repositories/firestore_repository.dart';
+import '../../widgets/error_dialog.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String? studentRollNumber;
@@ -89,10 +90,27 @@ class _ScannerScreenState extends State<ScannerScreen> {
       await FirestoreRepository.instance.redeemToken(code);
       _scannedQrs.add(code);
       if (!mounted) return;
+
+      final parts = code.trim().split(' ');
+      String redeemedSummary = 'Token';
+      if (parts.length >= 3) {
+        final rawType = parts[1].toLowerCase();
+        final count = int.tryParse(parts[2]) ?? 1;
+        String typeName = 'Meal';
+        if (rawType == 'eggs' || rawType == 'egg') {
+          typeName = 'Egg';
+        } else if (rawType == 'veg') {
+          typeName = 'Veg';
+        } else if (rawType == 'nonveg' || rawType == 'non-veg') {
+          typeName = 'Non-Veg';
+        }
+        redeemedSummary = '$count $typeName token${count > 1 ? 's' : ''}';
+      }
+
       _showResultDialog(
         isSuccess: true,
         title: 'Token Redeemed!',
-        message: 'Successfully redeemed:\n$code',
+        message: '$redeemedSummary redeemed successfully.',
       );
     } on TokenException {
       _scannedQrs.add(code);
@@ -107,7 +125,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       _showResultDialog(
         isSuccess: false,
         title: 'Student Not Found',
-        message: 'Roll number "${e.userId}" not found in database.',
+        message: 'Roll number "${e.userId}" not found in system.',
       );
     } on InvalidQrDataException {
       if (!mounted) return;
@@ -121,7 +139,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       _showResultDialog(
         isSuccess: false,
         title: 'Scan Error',
-        message: 'An unexpected error occurred: $e',
+        message: AppFeedback.sanitizeErrorMessage(e),
       );
     }
   }
