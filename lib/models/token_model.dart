@@ -56,16 +56,32 @@ class StudentTokens {
   final int nonVeg;
   final int veg;
   final int eggs;
+  final String? lastVegPurchaseDate;
+  final String? lastNonVegPurchaseDate;
 
-  const StudentTokens({this.nonVeg = 0, this.veg = 0, this.eggs = 0});
+  const StudentTokens({
+    this.nonVeg = 0,
+    this.veg = 0,
+    this.eggs = 0,
+    this.lastVegPurchaseDate,
+    this.lastNonVegPurchaseDate,
+  });
 
   bool get hasAnyToken => nonVeg > 0 || veg > 0 || eggs > 0;
 
-  StudentTokens copyWith({int? nonVeg, int? veg, int? eggs}) {
+  StudentTokens copyWith({
+    int? nonVeg,
+    int? veg,
+    int? eggs,
+    String? lastVegPurchaseDate,
+    String? lastNonVegPurchaseDate,
+  }) {
     return StudentTokens(
       nonVeg: nonVeg ?? this.nonVeg,
       veg: veg ?? this.veg,
       eggs: eggs ?? this.eggs,
+      lastVegPurchaseDate: lastVegPurchaseDate ?? this.lastVegPurchaseDate,
+      lastNonVegPurchaseDate: lastNonVegPurchaseDate ?? this.lastNonVegPurchaseDate,
     );
   }
 
@@ -74,6 +90,8 @@ class StudentTokens {
       nonVeg: (data['non-veg'] as num?)?.toInt() ?? 0,
       veg: (data['veg'] as num?)?.toInt() ?? 0,
       eggs: (data['eggs'] as num?)?.toInt() ?? 0,
+      lastVegPurchaseDate: data['last_veg_purchase_date'] as String?,
+      lastNonVegPurchaseDate: data['last_nonveg_purchase_date'] as String?,
     );
   }
 
@@ -84,7 +102,7 @@ class StudentTokens {
 
   @override
   String toString() =>
-      'StudentTokens(veg: $veg, nonVeg: $nonVeg, eggs: $eggs)';
+      'StudentTokens(veg: $veg, nonVeg: $nonVeg, eggs: $eggs, lastVegDate: $lastVegPurchaseDate, lastNonVegDate: $lastNonVegPurchaseDate)';
 }
 
 /// A pending token purchase selection made by a student before confirming.

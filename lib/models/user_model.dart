@@ -122,6 +122,7 @@ class UserSession {
   final String? uid;
   final String? dob;
   final String? doj;
+  final String? sessionId;
 
   const UserSession({
     required this.id,
@@ -133,6 +134,7 @@ class UserSession {
     this.uid,
     this.dob,
     this.doj,
+    this.sessionId,
   });
 
   Map<String, dynamic> toJson() => {
@@ -145,6 +147,7 @@ class UserSession {
         'uid': uid,
         'dob': dob,
         'doj': doj,
+        'sessionId': sessionId,
       };
 
   factory UserSession.fromJson(Map<String, dynamic> json) => UserSession(
@@ -157,6 +160,7 @@ class UserSession {
         uid: json['uid'] as String?,
         dob: json['dob'] as String?,
         doj: json['doj'] as String?,
+        sessionId: json['sessionId'] as String?,
       );
 
   UserSession copyWith({
@@ -169,6 +173,7 @@ class UserSession {
     String? uid,
     String? dob,
     String? doj,
+    String? sessionId,
   }) {
     return UserSession(
       id: id ?? this.id,
@@ -180,6 +185,7 @@ class UserSession {
       uid: uid ?? this.uid,
       dob: dob ?? this.dob,
       doj: doj ?? this.doj,
+      sessionId: sessionId ?? this.sessionId,
     );
   }
 

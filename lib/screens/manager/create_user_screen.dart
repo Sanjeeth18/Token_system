@@ -574,6 +574,15 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                         prefixIcon: Icons.email_outlined,
                         keyboardType: TextInputType.emailAddress,
                         textCapitalization: TextCapitalization.none,
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Email Address is required';
+                          }
+                          if (!val.contains('@') || !val.contains('.')) {
+                            return 'Enter a valid email address';
+                          }
+                          return null;
+                        },
                       ),
                     ],
                   ),
@@ -615,6 +624,12 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
+                            validator: (val) {
+                              if (val == null || val.trim().isEmpty) {
+                                return 'Department / Course is required';
+                              }
+                              return null;
+                            },
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: AppColors.surface,
@@ -659,6 +674,12 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                           suffixIcon: const Icon(Icons.calendar_today_rounded,
                               size: 18, color: AppColors.accentLight),
                           onTap: () => _pickDate(_dobController),
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) {
+                              return 'Date of Birth is required';
+                            }
+                            return null;
+                          },
                         ),
                         const SizedBox(height: 14),
                         AppTextField(
@@ -670,6 +691,12 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                           suffixIcon: const Icon(Icons.calendar_today_rounded,
                               size: 18, color: AppColors.accentLight),
                           onTap: () => _pickDate(_dojController),
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) {
+                              return 'Date of Joining is required';
+                            }
+                            return null;
+                          },
                         ),
                       ],
                     ),
@@ -695,6 +722,12 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                     prefixIcon: Icons.key_rounded,
                     suffixIcon: const Icon(Icons.verified_user_outlined,
                         size: 18, color: AppColors.vegGreen),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Password is required';
+                      }
+                      return null;
+                    },
                   ),
                 ),
 

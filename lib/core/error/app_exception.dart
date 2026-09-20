@@ -15,6 +15,12 @@ class InvalidCredentialsException extends AppException {
       : super('Invalid username or password. Please try again.');
 }
 
+/// Thrown when an account is already active on another device or session.
+class AlreadyLoggedInException extends AppException {
+  const AlreadyLoggedInException()
+      : super('This account is already active on another device or session. Only one user is allowed to log in at a time.');
+}
+
 /// Thrown when a user already exists in Firestore.
 class UserAlreadyExistsException extends AppException {
   final String userId;

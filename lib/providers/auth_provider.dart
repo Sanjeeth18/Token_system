@@ -82,8 +82,9 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Clears session and returns to idle.
   Future<void> logout() async {
+    final current = currentSession;
     try {
-      await _repo.signOut();
+      await _repo.signOut(userId: current?.id, role: current?.role);
     } catch (_) {}
     await _clearSession();
     state = const AuthIdle();

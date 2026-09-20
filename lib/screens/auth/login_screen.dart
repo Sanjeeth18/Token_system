@@ -206,10 +206,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     // Brand Identity Hero Section
                     Center(
                       child: Container(
-                        padding: const EdgeInsets.all(22),
+                        width: 90,
+                        height: 90,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: AppColors.accentGradient,
                           border: Border.all(
                             color: Colors.white.withValues(alpha: 0.3),
                             width: 2,
@@ -222,10 +222,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ],
                         ),
-                        child: const Icon(
-                          Icons.restaurant_menu_rounded,
-                          size: 52,
-                          color: Colors.white,
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/icon/Logo.png',
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              color: AppColors.accent,
+                              child: const Icon(
+                                Icons.restaurant_menu_rounded,
+                                size: 48,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),

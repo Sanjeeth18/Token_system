@@ -33,6 +33,13 @@ The **PSG Mess Token System** streamlines digital dining pass purchasing, wallet
 ### Key Capabilities
 
 * **Role-Based Access Control**: Tailored dashboards for Students, Mess Managers, Mess Staff/Employees, and System Admins.
+* **Strict User Provisioning Validation**: Mandatory input validation across all user creation forms (ID/Roll Number, Full Name, Email Address, DOB, DOJ, Department/Course, Password). Form submission is blocked if any field is left blank.
+* **Single-Account Session Security**: Strict single-account concurrent login enforcement. Prevents simultaneous logins across multiple devices or active sessions for the same user account.
+* **Daily Meal Token Restrictions**: Students are restricted to purchasing **Veg and Non-Veg tokens strictly once per calendar day**. Second purchase attempts on the same calendar day are blocked for both meal types even if the first token has been redeemed.
+* **Student Profile Department Locking**: Department/Course field is non-editable and read-only for students in the Edit Profile screen to maintain institutional compliance.
+* **Profile Image Crop & Save Workflow**: Image crop screen back/cancel button discards draft modifications, applying profile photo updates only after clicking "Save Changes".
+* **Responsive Category History Modals**: Title text in Non-Veg and meal redemption history bottom sheets gracefully truncates with ellipsis (`...`) on overflow with aligned close icon containers.
+* **Modern App Emblem & Branding**: Refreshed high-resolution app icon asset (`assets/icon/Logo.png`) displayed across app launcher and login screen.
 * **Daily Token Pools & Window Governance**: Automatic 00:00 UTC/IST resets (Veg quota defaults to 5,000 daily). Student purchases open after 6:00 AM; Manager pool updates permitted strictly before 6:00 AM.
 * **Egg Token Stepper & Wallet Locking**: Egg tokens purchased in batches of 15. Stepper increment/decrement buttons automatically lock when a student holds active egg tokens.
 * **Single-Use QR Counter Redemption**: Mobile camera scanner terminal (`mobile_scanner`) with atomic transactions that validate student balance, prevent double redemption, and format instant success responses.
@@ -91,6 +98,39 @@ The **PSG Mess Token System** streamlines digital dining pass purchasing, wallet
    flutter run -d chrome
    ```
 
+### Application Logo & Launcher Icon Setup
+
+The application features a modern high-resolution emblem logo configured for both in-app display and native Android/iOS launcher icons.
+
+1. **Logo Image Asset Location**:
+   Place the master high-resolution PNG image at `assets/icon/Logo.png`.
+
+2. **Register in `pubspec.yaml`**:
+   Ensure `assets/icon/Logo.png` is declared under `flutter.assets`:
+   ```yaml
+   flutter:
+     uses-material-design: true
+     assets:
+       - .env
+       - assets/icon/Logo.png
+   ```
+
+3. **Configure `flutter_launcher_icons`**:
+   Specify launcher icon options in `pubspec.yaml`:
+   ```yaml
+   flutter_launcher_icons:
+     android: "launcher_icon"
+     ios: true
+     image_path: "assets/icon/Logo.png"
+     remove_alpha_ios: true
+   ```
+
+4. **Generate Native Launcher Icons**:
+   Run the launcher icons generator command:
+   ```bash
+   dart run flutter_launcher_icons
+   ```
+
 ---
 
 ## Application Workflow
@@ -102,15 +142,17 @@ The **PSG Mess Token System** streamlines digital dining pass purchasing, wallet
 ```
 
 * **Meal Booking**:
-  - **Veg Meal**: 1 token per day. Enabled after 6:00 AM if available in daily pool.
-  - **Non-Veg Meal**: Served on scheduled days (Sunday, Wednesday, Friday). Enabled after 6:00 AM.
+  - **Veg Meal**: 1 token strictly per calendar day. Enabled after 6:00 AM if available in daily pool. Once purchased today, further Veg token purchases are locked for the remainder of the day (even if redeemed).
+  - **Non-Veg Meal**: 1 token strictly per calendar day. Enabled after 6:00 AM. Once purchased today, further Non-Veg token purchases are locked for the remainder of the day (even if redeemed).
   - **Egg Tokens**: Purchased in batches of 15. When `active egg count > 0`, quantity adjustment buttons (`+` / `-`) are locked.
 * **Token Pass Wallet & QR Generation**:
   - Students present single-use QR passes (`<RollNumber> <Type> <Count> <Nonce>`).
 * **Transaction History**:
   - **Purchases Tab**: Displays itemized receipt history (category, count, date, time).
-  - **Used History Tab**: Displays counter redemption timestamps and staff verification records.
+  - **Used History Tab**: Displays counter redemption timestamps and staff verification records. Title headers support ellipsis overflow and aligned close icons.
 * **Profile Management**:
+  - Department / Course field is locked and read-only for students.
+  - Profile avatar cropper reverts changes when pressing back/cancel, saving photo updates only upon clicking "Save Changes".
   - Change password with strong validation rules (min 10 characters, upper/lowercase, digits, special symbols).
 
 ### 2. Mess Manager Role
@@ -118,7 +160,7 @@ The **PSG Mess Token System** streamlines digital dining pass purchasing, wallet
 * **Token Pool Management**:
   - Sets or updates daily available **Veg** and **Non-Veg** token quotas strictly before 6:00 AM each day. Option locks automatically after 6:00 AM.
 * **User Lifecycle Management**:
-  - Create new Student, Employee, Manager, or Admin accounts.
+  - Create new Student, Employee, Manager, or Admin accounts with mandatory validation requiring every single input field (Roll/ID, Name, Email, DOB, DOJ, Department, Password) to be entered before submission.
   - Delete student accounts with automatic cross-deletion of Firestore documents and Firebase Auth accounts.
 * **Audit & Live Statistics**:
   - Monitor real-time total, purchased, and redeemed token metrics.
@@ -392,26 +434,31 @@ def seed_firestore(accounts):
     # Admin
     db.collection("Admins").document("A101").set({
         "uid": acc_map["A101"]["uid"], "name": "System Admin", "email": acc_map["A101"]["email"],
-        "role": "admin", "department": "System Administration", "createdAt": today_str
+        "role": "admin", "department": "System Administration", "createdAt": today_str,
+        "isLoggedIn": False, "activeSessionId": None
     })
 
     # Manager
     db.collection("Managers").document("M101").set({
         "uid": acc_map["M101"]["uid"], "name": "Mess Manager", "email": acc_map["M101"]["email"],
-        "role": "manager", "department": "Mess Administration", "createdAt": today_str
+        "role": "manager", "department": "Mess Administration", "createdAt": today_str,
+        "isLoggedIn": False, "activeSessionId": None
     })
 
     # Employee
     db.collection("Employees").document("E101").set({
         "uid": acc_map["E101"]["uid"], "name": "Counter Staff", "email": acc_map["E101"]["email"],
-        "role": "employee", "department": "Dining Services", "dob": "10-05-1992", "doj": "01-08-2022", "createdAt": today_str
+        "role": "employee", "department": "Dining Services", "dob": "10-05-1992", "doj": "01-08-2022", "createdAt": today_str,
+        "isLoggedIn": False, "activeSessionId": None
     })
 
     # Student
     db.collection("Students").document("22PW33").set({
         "uid": acc_map["22PW33"]["uid"], "name": "Demo Student", "email": acc_map["22PW33"]["email"],
         "course": "Msc Software Systems", "department": "Msc Software Systems", "role": "student",
-        "dob": "15-03-2004", "doj": "01-08-2023", "veg": 0, "non-veg": 0, "eggs": 15, "createdAt": today_str
+        "dob": "15-03-2004", "doj": "01-08-2023", "veg": 0, "non-veg": 0, "eggs": 15,
+        "last_veg_purchase_date": None, "createdAt": today_str,
+        "isLoggedIn": False, "activeSessionId": None
     })
 
     # Tokens/Counts Pool

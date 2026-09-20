@@ -254,6 +254,23 @@ class FirestoreRepository {
       final role = found.role;
       final docId = found.doc.id;
 
+      final bool isLoggedIn = data['isLoggedIn'] as bool? ?? false;
+      final String? activeSessionId = data['activeSessionId'] as String?;
+
+      if (isLoggedIn && activeSessionId != null && activeSessionId.isNotEmpty) {
+        await _auth.signOut();
+        throw const AlreadyLoggedInException();
+      }
+
+      final newSessionId = DateTime.now().millisecondsSinceEpoch.toString();
+
+      // Mark account as active with new session ID
+      await found.doc.reference.update({
+        'isLoggedIn': true,
+        'activeSessionId': newSessionId,
+        'lastLoginAt': FieldValue.serverTimestamp(),
+      });
+
       final name = data[AppConstants.fieldName] as String? ?? docId;
       final email = data[AppConstants.fieldEmail] as String? ?? activeEmail;
       final department = data[AppConstants.fieldCourse] as String? ??
@@ -274,17 +291,28 @@ class FirestoreRepository {
         uid: uid,
         dob: dob,
         doj: doj,
+        sessionId: newSessionId,
       );
     } on InvalidCredentialsException {
+      rethrow;
+    } on AlreadyLoggedInException {
       rethrow;
     } catch (e) {
       throw FirestoreException(e.toString());
     }
   }
 
-  /// Signs out current Firebase Auth session.
-  Future<void> signOut() async {
+  /// Signs out current Firebase Auth session and marks user session inactive in Firestore.
+  Future<void> signOut({String? userId, UserRole? role}) async {
     try {
+      if (userId != null && role != null) {
+        try {
+          await _db.collection(role.firestoreCollection).doc(userId.toUpperCase().trim()).update({
+            'isLoggedIn': false,
+            'activeSessionId': null,
+          });
+        } catch (_) {}
+      }
       await _auth.signOut();
     } catch (e) {
       throw FirestoreException(e.toString());
@@ -373,11 +401,14 @@ class FirestoreRepository {
         int newNonVeg = current.nonVeg;
         int newEggs = current.eggs;
 
-        // Veg purchase
+        final now = DateTime.now();
+        final dateStr = DateFormat('dd-MM-yyyy').format(now);
+
+        // Veg purchase (Restricted to once per day)
         if (selection.wantsVeg) {
-          if (current.veg > 0) {
+          if (current.veg > 0 || current.lastVegPurchaseDate == dateStr) {
             throw const TokenException(
-                TokenErrorType.alreadyUsed, 'Veg token already purchased.');
+                TokenErrorType.alreadyUsed, 'Veg token already purchased today.');
           }
           if (counts.veg <= 0) {
             throw const TokenException(
@@ -390,11 +421,11 @@ class FirestoreRepository {
           });
         }
 
-        // Non-Veg purchase
+        // Non-Veg purchase (Restricted to once per day)
         if (selection.wantsNonVeg) {
-          if (current.nonVeg > 0) {
+          if (current.nonVeg > 0 || current.lastNonVegPurchaseDate == dateStr) {
             throw const TokenException(
-                TokenErrorType.alreadyUsed, 'Non-Veg token already purchased.');
+                TokenErrorType.alreadyUsed, 'Non-Veg token already purchased today.');
           }
           if (counts.nonVeg <= 0) {
             throw const TokenException(
@@ -413,13 +444,26 @@ class FirestoreRepository {
         }
 
         final updated = StudentTokens(
-            veg: newVeg, nonVeg: newNonVeg, eggs: newEggs);
+          veg: newVeg,
+          nonVeg: newNonVeg,
+          eggs: newEggs,
+          lastVegPurchaseDate: selection.wantsVeg ? dateStr : current.lastVegPurchaseDate,
+          lastNonVegPurchaseDate: selection.wantsNonVeg ? dateStr : current.lastNonVegPurchaseDate,
+        );
 
-        tx.update(studentRef, {
+        final Map<String, dynamic> updateData = {
           AppConstants.fieldVeg: updated.veg,
           AppConstants.fieldNonVeg: updated.nonVeg,
           AppConstants.fieldEggs: updated.eggs,
-        });
+        };
+        if (selection.wantsVeg) {
+          updateData['last_veg_purchase_date'] = dateStr;
+        }
+        if (selection.wantsNonVeg) {
+          updateData['last_nonveg_purchase_date'] = dateStr;
+        }
+
+        tx.update(studentRef, updateData);
 
         return updated;
       });

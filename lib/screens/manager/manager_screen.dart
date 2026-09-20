@@ -63,10 +63,13 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
     }
   }
 
-  Future<void> _updateCount(String type, TextEditingController controller) async {
+  Future<void> _updateCount(
+      String type, TextEditingController controller) async {
     final count = int.tryParse(controller.text.trim());
     if (count == null || count < 0) {
-      AppFeedback.showSnackBar(context, 'Please enter a valid non-negative number', isError: true);
+      AppFeedback.showSnackBar(
+          context, 'Please enter a valid non-negative number',
+          isError: true);
       return;
     }
 
@@ -90,7 +93,8 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
       );
     } catch (e) {
       if (mounted) {
-        AppFeedback.showSnackBar(context, 'Failed to update tokens: $e', isError: true);
+        AppFeedback.showSnackBar(context, 'Failed to update tokens: $e',
+            isError: true);
       }
     } finally {
       if (mounted) {
@@ -109,50 +113,24 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
   Widget build(BuildContext context) {
     final countsAsync = ref.watch(tokenCountsProvider);
     final currentAuth = ref.watch(authProvider);
-    final user = currentAuth is AuthAuthenticated ? currentAuth.session : widget.session;
+    final user =
+        currentAuth is AuthAuthenticated ? currentAuth.session : widget.session;
 
     return AppScaffold(
       title: 'Manager Console',
       actions: [
-        if (user.photoUrl != null && user.photoUrl!.trim().isNotEmpty)
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ProfileScreen(session: user),
-                ),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.accent, width: 1.5),
-                  image: DecorationImage(
-                    image: NetworkImage(user.photoUrl!.trim()),
-                    fit: BoxFit.cover,
-                  ),
-                ),
+        IconButton(
+          icon: const Icon(Icons.person_rounded, color: AppColors.accent),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ProfileScreen(session: user),
               ),
-            ),
-          )
-        else
-          IconButton(
-            icon: const Icon(Icons.person_rounded, color: AppColors.accent),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ProfileScreen(session: user),
-                ),
-              );
-            },
-            tooltip: 'Profile',
-          ),
+            );
+          },
+          tooltip: 'Profile',
+        ),
         IconButton(
           icon: const Icon(Icons.logout_rounded, color: AppColors.textMuted),
           tooltip: 'Sign Out',
@@ -243,7 +221,8 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
               isUpdatingVeg: _isUpdatingVeg,
               isUpdatingNonVeg: _isUpdatingNonVeg,
               onUpdateVeg: () => _updateCount('veg', _vegCountController),
-              onUpdateNonVeg: () => _updateCount('non-veg', _nonVegCountController),
+              onUpdateNonVeg: () =>
+                  _updateCount('non-veg', _nonVegCountController),
             ),
             const SizedBox(height: 28),
 
@@ -268,7 +247,8 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => CreateUserScreen(currentUser: widget.session),
+                          builder: (_) =>
+                              CreateUserScreen(currentUser: widget.session),
                         ),
                       );
                     },
@@ -284,7 +264,8 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => DeleteUserScreen(currentUser: widget.session),
+                          builder: (_) =>
+                              DeleteUserScreen(currentUser: widget.session),
                         ),
                       );
                     },

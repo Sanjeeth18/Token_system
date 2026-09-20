@@ -46,3 +46,9 @@ app.*.map.json
 .env
 serviceAccountKey.json
 init_firebase.py
+
+# Kotlin & Gradle generated build artifacts
+.kotlin/
+android/.kotlin/
+.gradle/
+android/.gradle/

@@ -100,10 +100,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           debugPrint('ImageCropper note: $cropErr');
         }
 
-        final finalPath = croppedFile != null ? croppedFile.path : image.path;
-        setState(() {
-          _pickedImage = File(finalPath);
-        });
+        final cropped = croppedFile;
+        if (cropped != null) {
+          setState(() {
+            _pickedImage = File(cropped.path);
+          });
+        }
       }
     } catch (e) {
       if (!mounted) return;
@@ -273,48 +275,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Department for Student
+                      // Department for Student (Read-Only)
                       if (widget.session.role == UserRole.student) ...[
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Department / Course',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              initialValue: _selectedDepartment,
-                              isExpanded: true,
-                              dropdownColor: AppColors.surfaceElevated,
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 15,
-                              ),
-                              decoration: const InputDecoration(
-                                prefixIcon: Icon(Icons.school_outlined,
-                                    size: 20, color: AppColors.textMuted),
-                              ),
-                              items: AppConstants.courses.map((course) {
-                                return DropdownMenuItem(
-                                  value: course,
-                                  child: Text(
-                                    course,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                );
-                              }).toList(),
-                              onChanged: (val) {
-                                if (val != null) {
-                                  setState(() => _selectedDepartment = val);
-                                }
-                              },
-                            ),
-                          ],
+                        AppTextField(
+                          label: 'Department / Course',
+                          controller: TextEditingController(text: _selectedDepartment),
+                          readOnly: true,
+                          prefixIcon: Icons.school_outlined,
+                          suffixIcon: const Icon(
+                            Icons.lock_outline_rounded,
+                            color: AppColors.textMuted,
+                            size: 18,
+                          ),
                         ),
                       ],
                     ],

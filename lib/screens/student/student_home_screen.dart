@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
@@ -65,7 +66,9 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
 
     if (success) {
       ref.invalidate(studentPurchasesHistoryProvider(widget.session.id));
-      ref.read(studentTokensProvider(widget.session.id).notifier).refresh(widget.session.id);
+      ref
+          .read(studentTokensProvider(widget.session.id).notifier)
+          .refresh(widget.session.id);
       AppFeedback.showSnackBar(
         context,
         'Meal tokens booked successfully!',
@@ -85,9 +88,11 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
     final actionState = ref.watch(studentActionProvider);
     final selection = ref.watch(tokenSelectionProvider);
     final countsAsync = ref.watch(tokenCountsProvider);
-    final studentTokensAsync = ref.watch(studentTokensProvider(widget.session.id));
+    final studentTokensAsync =
+        ref.watch(studentTokensProvider(widget.session.id));
     final currentAuth = ref.watch(authProvider);
-    final user = currentAuth is AuthAuthenticated ? currentAuth.session : widget.session;
+    final user =
+        currentAuth is AuthAuthenticated ? currentAuth.session : widget.session;
 
     return LoadingOverlay(
       isLoading: actionState.isLoading,
@@ -95,33 +100,6 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
       child: AppScaffold(
         title: 'Mess Portal',
         actions: [
-        if (user.photoUrl != null && user.photoUrl!.trim().isNotEmpty)
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ProfileScreen(session: user),
-                ),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.accent, width: 1.5),
-                  image: DecorationImage(
-                    image: NetworkImage(user.photoUrl!.trim()),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-          )
-        else
           IconButton(
             icon: const Icon(Icons.person_rounded, color: AppColors.accent),
             onPressed: () {
@@ -142,16 +120,19 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
         ],
         bottomNavigationBar: NavigationBar(
           selectedIndex: _currentTabIndex,
-          onDestinationSelected: (index) => setState(() => _currentTabIndex = index),
+          onDestinationSelected: (index) =>
+              setState(() => _currentTabIndex = index),
           destinations: const [
             NavigationDestination(
               icon: Icon(Icons.add_shopping_cart_rounded),
-              selectedIcon: Icon(Icons.add_shopping_cart_rounded, color: AppColors.accent),
+              selectedIcon: Icon(Icons.add_shopping_cart_rounded,
+                  color: AppColors.accent),
               label: 'Book Meal',
             ),
             NavigationDestination(
               icon: Icon(Icons.account_balance_wallet_outlined),
-              selectedIcon: Icon(Icons.account_balance_wallet_rounded, color: AppColors.accent),
+              selectedIcon: Icon(Icons.account_balance_wallet_rounded,
+                  color: AppColors.accent),
               label: 'My Tokens',
             ),
           ],
@@ -171,7 +152,8 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.25),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.3)),
                       ),
                       child: Text(
                         user.id,
@@ -183,7 +165,7 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                         ),
                       ),
                     ),
- ),
+                  ),
                   const SizedBox(height: 16),
 
                   // Quick Action Card
@@ -195,7 +177,8 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.surface,
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: AppColors.vegGreen.withValues(alpha: 0.3)),
+                        border: Border.all(
+                            color: AppColors.vegGreen.withValues(alpha: 0.3)),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.2),
@@ -212,7 +195,10 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                               color: AppColors.vegGreen.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(14),
                             ),
-                            child: const Icon(Icons.account_balance_wallet_rounded, color: AppColors.vegGreen, size: 26),
+                            child: const Icon(
+                                Icons.account_balance_wallet_rounded,
+                                color: AppColors.vegGreen,
+                                size: 26),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
@@ -230,7 +216,9 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                 const SizedBox(height: 2),
                                 const Text(
                                   'Show active pass QR to redeem meal',
-                                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary),
                                 ),
                                 studentTokensAsync.when(
                                   data: (tokens) => Padding(
@@ -239,9 +227,12 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                       spacing: 6,
                                       runSpacing: 4,
                                       children: [
-                                        _buildTokenPill('Veg', tokens.veg, AppColors.vegGreen),
-                                        _buildTokenPill('Non-Veg', tokens.nonVeg, AppColors.nonVegRed),
-                                        _buildTokenPill('Eggs', tokens.eggs, AppColors.eggOrange),
+                                        _buildTokenPill('Veg', tokens.veg,
+                                            AppColors.vegGreen),
+                                        _buildTokenPill('Non-Veg',
+                                            tokens.nonVeg, AppColors.nonVegRed),
+                                        _buildTokenPill('Eggs', tokens.eggs,
+                                            AppColors.eggOrange),
                                       ],
                                     ),
                                   ),
@@ -251,7 +242,8 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                               ],
                             ),
                           ),
-                          const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textMuted, size: 16),
+                          const Icon(Icons.arrow_forward_ios_rounded,
+                              color: AppColors.textMuted, size: 16),
                         ],
                       ),
                     ),
@@ -281,7 +273,8 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                     loading: () => const Center(
                       child: Padding(
                         padding: EdgeInsets.all(30),
-                        child: CircularProgressIndicator(color: AppColors.accent),
+                        child:
+                            CircularProgressIndicator(color: AppColors.accent),
                       ),
                     ),
                     error: (err, _) => Container(
@@ -296,32 +289,41 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                       ),
                     ),
                     data: (counts) {
-                      final studentVeg =
-                          studentTokensAsync.valueOrNull?.veg ?? 0;
-                      final studentNonVeg =
-                          studentTokensAsync.valueOrNull?.nonVeg ?? 0;
-                      final studentEggs =
-                          studentTokensAsync.valueOrNull?.eggs ?? 0;
+                      final studentTokens = studentTokensAsync.valueOrNull;
+                      final studentVeg = studentTokens?.veg ?? 0;
+                      final studentNonVeg = studentTokens?.nonVeg ?? 0;
+                      final studentEggs = studentTokens?.eggs ?? 0;
+                      final lastVegDate = studentTokens?.lastVegPurchaseDate;
+                      final lastNonVegDate = studentTokens?.lastNonVegPurchaseDate;
+                      final todayStr = DateFormat('dd-MM-yyyy').format(DateTime.now());
+                      final hasPurchasedVegToday = studentVeg > 0 || lastVegDate == todayStr;
+                      final hasPurchasedNonVegToday = studentNonVeg > 0 || lastNonVegDate == todayStr;
 
-                      final isWindowOpen = MealDateUtils.isStudentPurchaseWindowOpen();
+                      final isWindowOpen =
+                          MealDateUtils.isStudentPurchaseWindowOpen();
 
                       final String? vegUnavailableReason = !isWindowOpen
                           ? 'Token purchases open after 6:00 AM.'
-                          : (studentVeg > 0
-                              ? 'Veg token already purchased.'
-                              : (counts.veg <= 0 ? 'Veg tokens are sold out.' : null));
+                          : (hasPurchasedVegToday
+                              ? 'Veg token already purchased today.'
+                              : (counts.veg <= 0
+                                  ? 'Veg tokens are sold out.'
+                                  : null));
 
                       final isVegAvailable = vegUnavailableReason == null;
                       final vegSubtext = vegUnavailableReason ?? 'Available';
 
                       final String? nonVegUnavailableReason = !isWindowOpen
                           ? 'Token purchases open after 6:00 AM.'
-                          : (studentNonVeg > 0
-                              ? 'Non-Veg token already purchased.'
-                              : (counts.nonVeg <= 0 ? 'Non-Veg tokens are sold out.' : null));
+                          : (hasPurchasedNonVegToday
+                              ? 'Non-Veg token already purchased today.'
+                              : (counts.nonVeg <= 0
+                                  ? 'Non-Veg tokens are sold out.'
+                                  : null));
 
                       final isNonVegAvailable = nonVegUnavailableReason == null;
-                      final nonVegSubtext = nonVegUnavailableReason ?? 'Available';
+                      final nonVegSubtext =
+                          nonVegUnavailableReason ?? 'Available';
 
                       return Column(
                         children: [
@@ -336,7 +338,9 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                             isAvailable: isVegAvailable,
                             onToggle: () {
                               if (!isVegAvailable) return;
-                              ref.read(tokenSelectionProvider.notifier).toggleVeg();
+                              ref
+                                  .read(tokenSelectionProvider.notifier)
+                                  .toggleVeg();
                             },
                           ),
 
@@ -351,7 +355,9 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                             isAvailable: isNonVegAvailable,
                             onToggle: () {
                               if (!isNonVegAvailable) return;
-                              ref.read(tokenSelectionProvider.notifier).toggleNonVeg();
+                              ref
+                                  .read(tokenSelectionProvider.notifier)
+                                  .toggleNonVeg();
                             },
                           ),
 
@@ -368,19 +374,24 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                 color: selection.eggCount > 0 || studentEggs > 0
                                     ? AppColors.eggYellow
                                     : AppColors.cardBorder,
-                                width: selection.eggCount > 0 || studentEggs > 0 ? 1.8 : 1,
+                                width: selection.eggCount > 0 || studentEggs > 0
+                                    ? 1.8
+                                    : 1,
                               ),
-                              boxShadow: selection.eggCount > 0 || studentEggs > 0
+                              boxShadow: selection.eggCount > 0 ||
+                                      studentEggs > 0
                                   ? [
                                       BoxShadow(
-                                        color: AppColors.eggYellow.withValues(alpha: 0.25),
+                                        color: AppColors.eggYellow
+                                            .withValues(alpha: 0.25),
                                         blurRadius: 14,
                                         offset: const Offset(0, 4),
                                       ),
                                     ]
                                   : [
                                       BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.2),
+                                        color:
+                                            Colors.black.withValues(alpha: 0.2),
                                         blurRadius: 6,
                                         offset: const Offset(0, 2),
                                       ),
@@ -391,10 +402,12 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: AppColors.eggYellow.withValues(alpha: 0.15),
+                                    color: AppColors.eggYellow
+                                        .withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(14),
                                     border: Border.all(
-                                      color: AppColors.eggYellow.withValues(alpha: 0.3),
+                                      color: AppColors.eggYellow
+                                          .withValues(alpha: 0.3),
                                       width: 1,
                                     ),
                                   ),
@@ -404,7 +417,8 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Row(
                                         children: [
@@ -441,10 +455,12 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 12, vertical: 6),
                                     decoration: BoxDecoration(
-                                      color: AppColors.eggYellow.withValues(alpha: 0.15),
+                                      color: AppColors.eggYellow
+                                          .withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(10),
                                       border: Border.all(
-                                        color: AppColors.eggYellow.withValues(alpha: 0.4),
+                                        color: AppColors.eggYellow
+                                            .withValues(alpha: 0.4),
                                       ),
                                     ),
                                     child: Text(
@@ -462,7 +478,8 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                       IconButton(
                                         onPressed: selection.eggCount > 0
                                             ? () => ref
-                                                .read(tokenSelectionProvider.notifier)
+                                                .read(tokenSelectionProvider
+                                                    .notifier)
                                                 .decrementEggs()
                                             : null,
                                         icon: const Icon(
@@ -482,7 +499,8 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
                                       IconButton(
                                         onPressed: isWindowOpen
                                             ? () => ref
-                                                .read(tokenSelectionProvider.notifier)
+                                                .read(tokenSelectionProvider
+                                                    .notifier)
                                                 .incrementEggs()
                                             : null,
                                         icon: const Icon(
