@@ -51,11 +51,39 @@ void main() async {
   );
 }
 
-class PsgTokenApp extends ConsumerWidget {
+class PsgTokenApp extends ConsumerStatefulWidget {
   const PsgTokenApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PsgTokenApp> createState() => _PsgTokenAppState();
+}
+
+class _PsgTokenAppState extends ConsumerState<PsgTokenApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.read(authProvider.notifier).onAppResumed();
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      ref.read(authProvider.notifier).onAppPaused();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
 
     Widget homeWidget = const LoginScreen();

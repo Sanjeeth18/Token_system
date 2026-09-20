@@ -256,19 +256,42 @@ class FirestoreRepository {
 
       final bool isLoggedIn = data['isLoggedIn'] as bool? ?? false;
       final String? activeSessionId = data['activeSessionId'] as String?;
+      final bool isAppActive = data['isAppActive'] as bool? ?? false;
+      final dynamic lastActiveAtRaw = data['lastActiveAt'];
+      DateTime? lastActiveAt;
+      if (lastActiveAtRaw is Timestamp) {
+        lastActiveAt = lastActiveAtRaw.toDate();
+      }
 
+      // Check if Phone A is actively using the app (foreground + active heartbeat within 45s)
+      bool isActivelyInUse = false;
       if (isLoggedIn && activeSessionId != null && activeSessionId.isNotEmpty) {
+        if (isAppActive) {
+          if (lastActiveAt != null) {
+            final diff = DateTime.now().difference(lastActiveAt);
+            if (diff.inSeconds < 45) {
+              isActivelyInUse = true;
+            }
+          } else {
+            isActivelyInUse = true;
+          }
+        }
+      }
+
+      if (isActivelyInUse) {
         await _auth.signOut();
         throw const AlreadyLoggedInException();
       }
 
       final newSessionId = DateTime.now().millisecondsSinceEpoch.toString();
 
-      // Mark account as active with new session ID
+      // Mark account as active with new session ID and set app active state
       await found.doc.reference.update({
         'isLoggedIn': true,
+        'isAppActive': true,
         'activeSessionId': newSessionId,
         'lastLoginAt': FieldValue.serverTimestamp(),
+        'lastActiveAt': FieldValue.serverTimestamp(),
       });
 
       final name = data[AppConstants.fieldName] as String? ?? docId;
@@ -302,6 +325,43 @@ class FirestoreRepository {
     }
   }
 
+  /// Updates active app status (foreground/background) in Firestore.
+  Future<void> updateAppActiveStatus({
+    required String userId,
+    required UserRole role,
+    required bool isAppActive,
+  }) async {
+    try {
+      final ref = _db.collection(role.firestoreCollection).doc(userId.toUpperCase().trim());
+      await ref.update({
+        'isAppActive': isAppActive,
+        'lastActiveAt': FieldValue.serverTimestamp(),
+      });
+    } catch (_) {}
+  }
+
+  /// Sends periodic heartbeat to update lastActiveAt while app is in foreground.
+  Future<void> sendSessionHeartbeat({
+    required String userId,
+    required UserRole role,
+  }) async {
+    try {
+      final ref = _db.collection(role.firestoreCollection).doc(userId.toUpperCase().trim());
+      await ref.update({
+        'isAppActive': true,
+        'lastActiveAt': FieldValue.serverTimestamp(),
+      });
+    } catch (_) {}
+  }
+
+  /// Listens to real-time session changes in Firestore to detect session displacement.
+  Stream<DocumentSnapshot> watchUserDoc({
+    required String userId,
+    required UserRole role,
+  }) {
+    return _db.collection(role.firestoreCollection).doc(userId.toUpperCase().trim()).snapshots();
+  }
+
   /// Signs out current Firebase Auth session and marks user session inactive in Firestore.
   Future<void> signOut({String? userId, UserRole? role}) async {
     try {
@@ -309,6 +369,7 @@ class FirestoreRepository {
         try {
           await _db.collection(role.firestoreCollection).doc(userId.toUpperCase().trim()).update({
             'isLoggedIn': false,
+            'isAppActive': false,
             'activeSessionId': null,
           });
         } catch (_) {}

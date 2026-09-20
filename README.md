@@ -34,7 +34,7 @@ The **PSG Mess Token System** streamlines digital dining pass purchasing, wallet
 
 * **Role-Based Access Control**: Tailored dashboards for Students, Mess Managers, Mess Staff/Employees, and System Admins.
 * **Strict User Provisioning Validation**: Mandatory input validation across all user creation forms (ID/Roll Number, Full Name, Email Address, DOB, DOJ, Department/Course, Password). Form submission is blocked if any field is left blank.
-* **Single-Account Session Security**: Strict single-account concurrent login enforcement. Prevents simultaneous logins across multiple devices or active sessions for the same user account.
+* **Dynamic Active Session & Device Takeover Security**: Smart session management that monitors app lifecycle (`isAppActive`) and heartbeat pings (`lastActiveAt`). Concurrent logins are blocked ONLY if an account is actively in use on the primary device (foreground + active heartbeat within 45s). If the primary device is paused, backgrounded, inactive, or lost, secondary devices are permitted to log in seamlessly, automatically displacing the previous session upon device resume.
 * **Daily Meal Token Restrictions**: Students are restricted to purchasing **Veg and Non-Veg tokens strictly once per calendar day**. Second purchase attempts on the same calendar day are blocked for both meal types even if the first token has been redeemed.
 * **Student Profile Department Locking**: Department/Course field is non-editable and read-only for students in the Edit Profile screen to maintain institutional compliance.
 * **Profile Image Crop & Save Workflow**: Image crop screen back/cancel button discards draft modifications, applying profile photo updates only after clicking "Save Changes".
@@ -293,10 +293,10 @@ erDiagram
 
 | Collection | Document ID | Key Fields | Description |
 | :--- | :--- | :--- | :--- |
-| **`Students`** | Roll Number (e.g. `22PW33`) | `uid`, `name`, `email`, `course`, `department`, `veg`, `non-veg`, `eggs`, `photoUrl`, `createdAt` | Student profile & live token balance |
-| **`Managers`** | Manager ID (e.g. `M101`) | `uid`, `name`, `email`, `role`, `department`, `photoUrl`, `createdAt` | Mess Manager accounts |
-| **`Employees`** | Staff ID (e.g. `E101`) | `uid`, `name`, `email`, `role`, `department`, `dob`, `doj`, `photoUrl`, `createdAt` | Mess counter staff accounts |
-| **`Admins`** | Admin ID (e.g. `A101`) | `uid`, `name`, `email`, `role`, `department`, `photoUrl`, `createdAt` | System Administrator accounts |
+| **`Students`** | Roll Number (e.g. `22PW33`) | `uid`, `name`, `email`, `course`, `department`, `veg`, `non-veg`, `eggs`, `photoUrl`, `isLoggedIn`, `isAppActive`, `activeSessionId`, `lastActiveAt`, `createdAt` | Student profile & live token balance |
+| **`Managers`** | Manager ID (e.g. `M101`) | `uid`, `name`, `email`, `role`, `department`, `photoUrl`, `isLoggedIn`, `isAppActive`, `activeSessionId`, `lastActiveAt`, `createdAt` | Mess Manager accounts |
+| **`Employees`** | Staff ID (e.g. `E101`) | `uid`, `name`, `email`, `role`, `department`, `dob`, `doj`, `photoUrl`, `isLoggedIn`, `isAppActive`, `activeSessionId`, `lastActiveAt`, `createdAt` | Mess counter staff accounts |
+| **`Admins`** | Admin ID (e.g. `A101`) | `uid`, `name`, `email`, `role`, `department`, `photoUrl`, `isLoggedIn`, `isAppActive`, `activeSessionId`, `lastActiveAt`, `createdAt` | System Administrator accounts |
 | **`Tokens`** | Document `Counts` | `veg`, `non-veg`, `veg_purchased`, `non-veg_purchased`, `lastVegReset`, `lastResetDate` | Global daily token inventory pool |
 | **`Purchases`** | Auto-generated ID | `rollNumber`, `category`, `count`, `date`, `time`, `timestamp` | Audit log of token purchases |
 | **`Redemptions`** | Auto-generated ID | `rollNumber`, `category`, `count`, `nonce`, `date`, `time`, `timestamp` | Audit log of counter redemptions |
@@ -499,10 +499,10 @@ if __name__ == "__main__":
 
 | Role | Username / Doc ID | Email | Password | Primary Permissions |
 | :--- | :--- | :--- | :--- | :--- |
-| **Admin** | `A101` | `admin@example.com` | `Password@1234` | Full system governance, view all members |
-| **Manager** | `M101` | `manager@example.com` | `Password@1234` | Set daily token pools (< 6:00 AM), user lifecycle |
-| **Employee** | `E101` | `staff@example.com` | `Password@1234` | Counter QR scanning & single-use redemption |
-| **Student** | `22PW33` | `student@example.com` | `Password@1234` | Book tokens (> 6:00 AM), wallet passes, transaction history |
+| **Admin** | `A101` | `sanjeeth653@gmail.com` | `Admin@1234` | Full system governance, view all members |
+| **Manager** | `M101` | `22pw33@psgtech.ac.in` | `Password@1234` | Set daily token pools (< 6:00 AM), user lifecycle |
+| **Employee** | `E101` | `myworks854@gmail.com` | `Password@1234` | Counter QR scanning & single-use redemption |
+| **Student** | `22PW33` | `clgworks02@gmail.com` | `Password@1234` | Book tokens (> 6:00 AM), wallet passes, transaction history |
 
 ---
 

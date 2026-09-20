@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
@@ -31,8 +33,15 @@ class AuthError extends AuthState {
 class AuthNotifier extends Notifier<AuthState> {
   static const String _keyUserSession = 'user_session_json';
 
+  Timer? _heartbeatTimer;
+  StreamSubscription<DocumentSnapshot>? _sessionSubscription;
+
   @override
   AuthState build() {
+    ref.onDispose(() {
+      _stopHeartbeat();
+      _stopSessionSubscription();
+    });
     _restoreSession();
     return const AuthIdle();
   }
@@ -48,6 +57,7 @@ class AuthNotifier extends Notifier<AuthState> {
         final Map<String, dynamic> data = jsonDecode(rawJson);
         final session = UserSession.fromJson(data);
         state = AuthAuthenticated(session);
+        _startHeartbeatAndWatcher(session);
       }
     } catch (_) {}
   }
@@ -68,6 +78,78 @@ class AuthNotifier extends Notifier<AuthState> {
     } catch (_) {}
   }
 
+  void _stopHeartbeat() {
+    _heartbeatTimer?.cancel();
+    _heartbeatTimer = null;
+  }
+
+  void _stopSessionSubscription() {
+    _sessionSubscription?.cancel();
+    _sessionSubscription = null;
+  }
+
+  void _startHeartbeatAndWatcher(UserSession session) {
+    _stopHeartbeat();
+    _stopSessionSubscription();
+
+    // Mark active state in Firestore
+    _repo.updateAppActiveStatus(
+      userId: session.id,
+      role: session.role,
+      isAppActive: true,
+    );
+
+    // Heartbeat ping every 15 seconds
+    _heartbeatTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      _repo.sendSessionHeartbeat(userId: session.id, role: session.role);
+    });
+
+    // Real-time watcher for session displacement
+    _sessionSubscription = _repo
+        .watchUserDoc(userId: session.id, role: session.role)
+        .listen((snap) {
+      if (!snap.exists) return;
+      final data = snap.data() as Map<String, dynamic>?;
+      if (data == null) return;
+
+      final activeSessionId = data['activeSessionId'] as String?;
+      final isLoggedIn = data['isLoggedIn'] as bool? ?? false;
+
+      // Check if session has been displaced by another login or terminated
+      if (!isLoggedIn || (session.sessionId != null && activeSessionId != null && activeSessionId != session.sessionId)) {
+        _handleSessionDisplaced();
+      }
+    });
+  }
+
+  Future<void> _handleSessionDisplaced() async {
+    _stopHeartbeat();
+    _stopSessionSubscription();
+    await _clearSession();
+    state = const AuthError('Your account was logged in on another device.');
+  }
+
+  /// Called when app transitions to foreground / resumed state.
+  void onAppResumed() {
+    final current = currentSession;
+    if (current != null) {
+      _startHeartbeatAndWatcher(current);
+    }
+  }
+
+  /// Called when app transitions to background / paused / inactive state.
+  void onAppPaused() {
+    final current = currentSession;
+    if (current != null) {
+      _stopHeartbeat();
+      _repo.updateAppActiveStatus(
+        userId: current.id,
+        role: current.role,
+        isAppActive: false,
+      );
+    }
+  }
+
   /// Attempts login with the given credentials.
   Future<void> login(String username, String password) async {
     state = const AuthLoading();
@@ -75,6 +157,7 @@ class AuthNotifier extends Notifier<AuthState> {
       final session = await _repo.checkCredentials(username, password);
       await _saveSession(session);
       state = AuthAuthenticated(session);
+      _startHeartbeatAndWatcher(session);
     } catch (e) {
       state = AuthError(e.toString().replaceAll('AppException: ', '').replaceAll('Exception: ', ''));
     }
@@ -82,6 +165,8 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Clears session and returns to idle.
   Future<void> logout() async {
+    _stopHeartbeat();
+    _stopSessionSubscription();
     final current = currentSession;
     try {
       await _repo.signOut(userId: current?.id, role: current?.role);
