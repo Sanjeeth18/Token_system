@@ -26,13 +26,30 @@ class AdminScreen extends ConsumerStatefulWidget {
   ConsumerState<AdminScreen> createState() => _AdminScreenState();
 }
 
-class _AdminScreenState extends ConsumerState<AdminScreen> {
+class _AdminScreenState extends ConsumerState<AdminScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(tokenCountsProvider.notifier).refresh();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.read(tokenCountsProvider.notifier).refresh();
+      ref.invalidate(purchasesHistoryProvider);
+      ref.invalidate(redemptionsHistoryProvider);
+      ref.invalidate(eggTokenSummaryProvider);
+    }
   }
 
   Future<void> _handleLogout() async {

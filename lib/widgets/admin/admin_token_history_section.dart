@@ -86,54 +86,56 @@ class _AdminTokenHistorySectionState
           ),
           const SizedBox(height: 16),
 
-          // Egg Summary Metric Card (shown when category == 'egg')
-          if (_selectedCategory == 'egg') ...[
-            eggSummaryAsync.when(
-              loading: () => const Padding(
-                padding: EdgeInsets.all(12),
-                child: Center(
-                    child: CircularProgressIndicator(
-                        color: AppColors.eggYellow, strokeWidth: 2)),
-              ),
-              error: (err, _) => Text('Error loading summary: $err',
-                  style: const TextStyle(color: AppColors.error)),
-              data: (summary) => Container(
-                padding: const EdgeInsets.all(14),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.eggYellow.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                      color: AppColors.eggYellow.withValues(alpha: 0.3)),
+          // Token Summary Metric Card (shown for all categories)
+          Container(
+            padding: const EdgeInsets.all(14),
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: AppColors.accentLight.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                  color: AppColors.accentLight.withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${_selectedCategory == 'veg' ? 'Veg' : _selectedCategory == 'nonveg' ? 'Non-Veg' : 'Egg'} Token Summary',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.accentLight,
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    const Text(
-                      'Egg Token Summary',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.eggYellow,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildEggMetricItem('Purchased', '${summary.purchased}',
-                            AppColors.accentLight),
-                        Container(
-                            height: 30, width: 1, color: AppColors.cardBorder),
-                        _buildEggMetricItem('Used (Redeemed)',
-                            '${summary.used}', AppColors.vegGreen),
-                      ],
-                    ),
+                    _buildEggMetricItem(
+                        'Purchased',
+                        purchasesAsync.maybeWhen(
+                          data: (items) => items
+                              .fold<int>(0, (sum, item) => sum + item.count)
+                              .toString(),
+                          orElse: () => '-',
+                        ),
+                        AppColors.accentLight),
+                    Container(
+                        height: 30, width: 1, color: AppColors.cardBorder),
+                    _buildEggMetricItem(
+                        'Used (Redeemed)',
+                        redemptionsAsync.maybeWhen(
+                          data: (items) => items
+                              .fold<int>(0, (sum, item) => sum + item.count)
+                              .toString(),
+                          orElse: () => '-',
+                        ),
+                        AppColors.vegGreen),
                   ],
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
 
           // Log Type Selector: Purchased vs Redeemed
           Container(
@@ -156,7 +158,7 @@ class _AdminTokenHistorySectionState
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        'Purchased Log',
+                        'Purchased Log (${purchasesAsync.maybeWhen(data: (items) => items.fold<int>(0, (sum, item) => sum + item.count), orElse: () => 0)})',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 13,
@@ -182,7 +184,7 @@ class _AdminTokenHistorySectionState
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        'Used / Redeemed Log',
+                        'Used / Redeemed Log (${redemptionsAsync.maybeWhen(data: (items) => items.fold<int>(0, (sum, item) => sum + item.count), orElse: () => 0)})',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 13,

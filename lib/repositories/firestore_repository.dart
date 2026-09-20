@@ -744,9 +744,13 @@ class FirestoreRepository {
           (lastReset != null && DateFormat('yyyy-MM-dd').format(lastReset) != todayDateStr);
 
       if (isNewDay) {
+        final currentWeekday = now.weekday;
+        final int nonVegTokens = (currentWeekday == DateTime.sunday || currentWeekday == DateTime.wednesday) ? 1000 : 0;
+
         await ref.set({
           ...data,
           AppConstants.fieldVeg: 5000,
+          AppConstants.fieldNonVeg: nonVegTokens,
           AppConstants.fieldVegPurchased: 0,
           AppConstants.fieldNonVegPurchased: 0,
           'lastVegReset': FieldValue.serverTimestamp(),
