@@ -12,7 +12,7 @@ exports.resetVegNonvegFields = functions.pubsub.schedule("every 24 hours")
     const tokenCollectRef = db.collection("Tokens").doc("Counts");
 
     // Update the fields to 0
-    batch.update(tokenCollectRef, { veg: 0, nonveg: 0 });
+    batch.update(tokenCollectRef, { veg: 0, "non-veg": 0 });
 
     await batch.commit();
 
